@@ -50,6 +50,13 @@ class Car:
             right = -1
         self._motion(left = left, right = right)
 
-    def drive(self, throttle = 0, steer = 0, cut = False, duration = 0.0):
-        self._control_car(throttle, steer)
+    def drive(self, actiondict = None, throttle = 0, steer = 0, cut = False, duration = None):
+        
+        if actiondict is not None:
+            throttle = actiondict['throttle']
+            steer = actiondict['steer']
+            cut = actiondict['cut']
+        
+        self._control_car(throttle = throttle, steer = steer)
+        self._cut(actiondict['cut'])
         #self.stop(duration)
