@@ -1,20 +1,25 @@
-import picamera
+#import picamera
 import pygame
 import io
 
-# Init camera
-camera = picamera.PiCamera()
-camera.resolution = (256, 256)
-camera.crop = (0.0, 0.0, 1.0, 1.0)
-# Init buffer
-rgb = bytearray(camera.resolution[0] * camera.resolution[1] * 3)
+# Init car
+import goatcontrol
+from pygame.locals import *
+import utils
+import numpy as np
+car = goatcontrol.Car()
+recorder = utils.SaveTransitions()        
+discrete_timer = utils.Discretize_loop(0.2)
 
+# Init camera
+camera = goatcontrol.GoatCam()
+camera.res
 # Init pygame 
 pygame.init()
-screen = pygame.display.set_mode((256,256))
+screen = pygame.display.set_mode(camera.res)
 pygame.display.set_caption('GardenGoat')
-x = (screen.get_width() - camera.resolution[0]) / 2
-y = (screen.get_height() - camera.resolution[1]) / 2
+x = (screen.get_width() - camera.res[0]) / 2
+y = (screen.get_height() - camera.res[1]) / 2
 
 
 # DEFAULT PARS (ie dont drive, steer or cut)
@@ -40,17 +45,6 @@ def keyboard_control():
 
     return action
 
-
-
-# Init car
-import goatcontrol
-from pygame.locals import *
-import utils
-
-car = goatcontrol.Car()
-recorder = utils.SaveTransitions()        
-discrete_timer = utils.Discretize_loop(0.2)
-
 # Main loop
 exitFlag = True
 while(exitFlag):
@@ -62,15 +56,12 @@ while(exitFlag):
             exitFlag = False
     screen.fill(0)
     
-    stream = io.BytesIO()
-    camera.capture(stream, use_video_port=True, format='rgb')
-    stream.seek(0)
-    stream.readinto(rgb)
-    stream.close()
-    img_pygame = pygame.image.frombuffer(rgb[0:
-          (camera.resolution[0] * camera.resolution[1] * 3)],
-           camera.resolution, 'RGB')
-    img = pygame.surfarray.array3d(img_pygame).swapaxes(0,1)
+    vision_output = camera.step()
+    img = vision_output['image']
+
+    img_pygame = pygame.surfarray.make_surface(np.swapaxes(img,0,1))
+
+    #img = pygame.surfarray.array3d(img_pygame).swapaxes(0,1)
     
     if img_pygame:
         screen.blit(img_pygame, (x,y))

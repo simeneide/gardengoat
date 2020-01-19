@@ -1,3 +1,7 @@
+
+################
+#### MOTOR ####
+
 from adafruit_motorkit import MotorKit
 import time
 
@@ -60,3 +64,55 @@ class Car:
         self._control_car(throttle = throttle, steer = steer)
         self._cut(actiondict['cut'])
         #self.stop(duration)
+
+################
+#### CAMERA ####
+
+import time
+import picamera
+import numpy as np
+import apriltag
+
+def rgb2gray(rgb):
+    return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
+
+class GoatCam:
+    def __init__(self):
+        self.camera = picamera.PiCamera()
+        self.res = (512,512)
+        self.camera.resolution = self.res
+        #self.camera.framerate = 24
+        self.camera.crop = (0.0, 0.0, 1.0, 1.0)
+        # Init buffer
+        self.rgb = bytearray(self.camera.resolution[0] * self.camera.resolution[1] * 3)
+        self.img = np.empty( self.res+ (3,), dtype=np.uint8)
+        
+        # APRILTAG INIT
+        self.detector_apriltag = apriltag.Detector()
+        time.sleep(2)
+        
+    def capture(self):
+        self.camera.capture(self.img,use_video_port=True, format= 'rgb')
+        return self.img
+
+    def detect_apriltag(self):
+        gray = rgb2gray(self.img).astype(np.uint8)
+        apriltags = self.detector_apriltag.detect(gray)
+        if len(apriltags) == 0:
+            aptag = None
+        elif len(apriltags)>0:
+            obj = apriltags[0]
+            aptag = {'corners' : obj.corners.astype("int"),
+                    'center' : obj.center,
+                    'centerpct' : obj.center / self.res
+                    }
+        return aptag
+    
+    def step(self, show_apriltag = True):
+        img = self.capture()
+        aptag = self.detect_apriltag()
+        
+        if show_apriltag & (aptag is not None):
+            corners = aptag['corners']
+            img[corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
+        return {'image' : img, 'apriltag' : aptag}
