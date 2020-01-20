@@ -62,7 +62,7 @@ class Car:
             cut = actiondict['cut']
         
         self._control_car(throttle = throttle, steer = steer)
-        self._cut(actiondict['cut'])
+        self._cut(cut)
         #self.stop(duration)
 
 ################
@@ -79,18 +79,19 @@ def rgb2gray(rgb):
 class GoatCam:
     def __init__(self):
         self.camera = picamera.PiCamera()
-        self.res = (512,512)
-        self.camera.resolution = self.res
+        self.resolution = (512,512)
+        self.camera.resolution = self.resolution
         #self.camera.framerate = 24
         self.camera.crop = (0.0, 0.0, 1.0, 1.0)
         # Init buffer
         self.rgb = bytearray(self.camera.resolution[0] * self.camera.resolution[1] * 3)
-        self.img = np.empty( self.res+ (3,), dtype=np.uint8)
+        self.img = np.empty( self.resolution+ (3,), dtype=np.uint8)
         
         # APRILTAG INIT
         self.detector_apriltag = apriltag.Detector()
         time.sleep(2)
-        
+    def close(self):
+        self.camera.close()
     def capture(self):
         self.camera.capture(self.img,use_video_port=True, format= 'rgb')
         return self.img
@@ -104,7 +105,7 @@ class GoatCam:
             obj = apriltags[0]
             aptag = {'corners' : obj.corners.astype("int"),
                     'center' : obj.center,
-                    'centerpct' : obj.center / self.res
+                    'centerpct' : obj.center / self.resolution
                     }
         return aptag
     

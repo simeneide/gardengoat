@@ -1,4 +1,3 @@
-#import picamera
 import pygame
 import io
 
@@ -8,18 +7,17 @@ from pygame.locals import *
 import utils
 import numpy as np
 car = goatcontrol.Car()
-recorder = utils.SaveTransitions()        
+recorder = utils.SaveTransitions()
 discrete_timer = utils.Discretize_loop(0.2)
 
 # Init camera
 camera = goatcontrol.GoatCam()
-camera.res
 # Init pygame 
 pygame.init()
-screen = pygame.display.set_mode(camera.res)
+screen = pygame.display.set_mode(camera.resolution)
 pygame.display.set_caption('GardenGoat')
-x = (screen.get_width() - camera.res[0]) / 2
-y = (screen.get_height() - camera.res[1]) / 2
+x = (screen.get_width() - camera.resolution[0]) / 2
+y = (screen.get_height() - camera.resolution[1]) / 2
 
 
 # DEFAULT PARS (ie dont drive, steer or cut)
@@ -45,6 +43,30 @@ def keyboard_control():
 
     return action
 
+import time
+def drive_to_tag(state):
+    action = {
+        'throttle' : 0,
+        'steer' : 0,
+        'cut' : 0
+    }
+    apriltag = state['apriltag']
+    if apriltag:
+        angle = (apriltag['centerpct'][0]-0.5).round(3)
+        if abs(angle) <0.03:
+            action['throttle'] = 1
+            action['steer'] = 0
+        else:
+            action['throttle']=0
+            action['steer'] = np.sign(angle)
+            
+        print(f"throttle = {action['throttle']}, steer = {action['steer']}, angle: {angle}")
+    else:
+        action['throttle'] = 0.0
+        action['steer'] = 1
+        print(f"throttle = {action['throttle']}, steer = {action['steer']}, searching..")
+    return action
+
 # Main loop
 exitFlag = True
 while(exitFlag):
@@ -56,9 +78,17 @@ while(exitFlag):
             exitFlag = False
     screen.fill(0)
     
-    vision_output = camera.step()
-    img = vision_output['image']
-
+    
+    ## CONTROL SEQUENCE
+    state = camera.step()
+    img = state['image']
+    
+    action = drive_to_tag(state)
+    car.drive(actiondict=action)
+    time.sleep(0.3)
+    car.stop()
+    time.sleep(0.05)
+    
     img_pygame = pygame.surfarray.make_surface(np.swapaxes(img,0,1))
 
     #img = pygame.surfarray.array3d(img_pygame).swapaxes(0,1)
@@ -68,8 +98,7 @@ while(exitFlag):
         pygame.display.update()
 
     
-    action = keyboard_control()
-    car.drive(actiondict=action)
+
         
     ### RECORD EVENTS ###
     if sum([abs(val) for key, val in action.items()]) > 0: # i.e any action was taken
@@ -81,3 +110,4 @@ while(exitFlag):
 
 camera.close()
 pygame.display.quit()
+car.stop()

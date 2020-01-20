@@ -2,6 +2,7 @@ import datetime
 import time
 import pickle
 import os
+import logging
 class SaveTransitions:
     def __init__(self, data_dir = "data"):
         self.data_dir = data_dir
@@ -39,7 +40,7 @@ class Discretize_loop:
         wait = self.step_time - elapsed_time
         
         if wait < 0:
-            print(f"WARNING: Loop elapsed time is above step time: {elapsed_time} vs {self.step_time}")
+            logging.info(f"WARNING: Loop elapsed time is above step time: {elapsed_time} vs {self.step_time}")
         else:
             print(elapsed_time)
             time.sleep(wait)
