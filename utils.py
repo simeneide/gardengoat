@@ -2,28 +2,37 @@ import datetime
 import time
 import pickle
 import os
+import logging
 class SaveTransitions:
     def __init__(self, data_dir = "data"):
         self.data_dir = data_dir
-        if not os.path.exists(self.data_dir):
-            os.makedirs(self.data_dir)
+        self.tub = f"tub_{datetime.datetime.now()}"
+        self.save_dir = f"{self.data_dir}/{self.tub}"
+        
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
 
-        self.image_prev = None
+        self.image_prev_path = None
 
     def save_step(self, action, newimage):
+        ts = datetime.datetime.now()
+        filename_dat = f'{self.save_dir}/event_{str(ts).replace(" ","_")}.pickle'
+        filename_img = f'{self.save_dir}/img_{str(ts).replace(" ","_")}.pickle'
         
         event = {
-            'timestamp' : datetime.datetime.now(),
+            'timestamp' : ts,
             'action' : action,
-            'image' : newimage,
-            'image_prev' : self.image_prev,
+            'image_path' : filename_img,
+            'image_prev_path' : self.image_prev_path,
         }
 
-        filename = f'{self.data_dir}/{str(event["timestamp"]).replace(" ","_")}.pickle'
-        with open(filename, "wb+") as handler:
+        with open(filename_dat, "wb+") as handler:
             pickle.dump(event, handler)
-
-        self.image_prev = newimage # update last image for next iteration
+            
+        with open(filename_img, "wb+") as handler:
+            pickle.dump(filename_img, handler)
+            
+        self.image_prev = filename_img # update last image for next iteration
 
 
 class Discretize_loop:
@@ -39,7 +48,7 @@ class Discretize_loop:
         wait = self.step_time - elapsed_time
         
         if wait < 0:
-            print(f"WARNING: Loop elapsed time is above step time: {elapsed_time} vs {self.step_time}")
+            logging.info(f"WARNING: Loop elapsed time is above step time: {elapsed_time} vs {self.step_time}")
         else:
             print(elapsed_time)
             time.sleep(wait)
