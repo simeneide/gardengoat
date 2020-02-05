@@ -21,7 +21,7 @@ y = (screen.get_height() - camera.resolution[1]) / 2
 
 
 # DEFAULT PARS (ie dont drive, steer or cut)
-def keyboard_control():
+def keyboard_control(*args, **kwargs):
     keys = pygame.key.get_pressed()
     action = {
         'throttle' : 0,
@@ -69,6 +69,8 @@ def drive_to_tag(state):
 
 # Main loop
 exitFlag = True
+
+state = None # Init state
 while(exitFlag):
     discrete_timer.start()
     
@@ -77,28 +79,24 @@ while(exitFlag):
             event.type is pygame.QUIT):
             exitFlag = False
     screen.fill(0)
-    
+
+    action = keyboard_control(state)
+    car.drive(actiondict=action)
     
     ## CONTROL SEQUENCE
     state = camera.step()
     img = state['image']
     
-    action = drive_to_tag(state)
-    car.drive(actiondict=action)
-    time.sleep(0.3)
-    car.stop()
-    time.sleep(0.05)
+    #time.sleep(0.3)
+    #car.stop()
+    #time.sleep(0.05)
     
-    img_pygame = pygame.surfarray.make_surface(np.swapaxes(img,0,1))
-
-    #img = pygame.surfarray.array3d(img_pygame).swapaxes(0,1)
-    
-    if img_pygame:
-        screen.blit(img_pygame, (x,y))
-        pygame.display.update()
-
-    
-
+    import random
+    if random.random() > 0.5:
+        img_pygame = pygame.surfarray.make_surface(np.swapaxes(img,0,1))
+        if img_pygame:
+            screen.blit(img_pygame, (x,y))
+            pygame.display.update()
         
     ### RECORD EVENTS ###
     if sum([abs(val) for key, val in action.items()]) > 0: # i.e any action was taken
