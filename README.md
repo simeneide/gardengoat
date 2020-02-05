@@ -23,4 +23,8 @@ Following [this](https://learn.adafruit.com/adafruit-dc-and-stepper-motor-hat-fo
 
 
 ### Other packages
-- apriltags (https://pypi.org/project/apriltags/)
+- apriltags (https://pypi.org/project/apriltags/) (need `apt-get update && apt-get install cmake`)
+- Installed by building here: `https://github.com/AprilRobotics/apriltag`
+
+pip3 install jupyterlab
+apt-get install emacs
