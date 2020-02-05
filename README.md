@@ -28,3 +28,14 @@ Following [this](https://learn.adafruit.com/adafruit-dc-and-stepper-motor-hat-fo
 
 pip3 install jupyterlab
 apt-get install emacs
+
+### TORCH and TORCHVISION
+Installed from wheel on these:
+https://github.com/nmilosev/pytorch-arm-builds
+
+But for rpi4 there was some errors, so I installed a wheel after reading this comment:
+https://github.com/nmilosev/pytorch-arm-builds/issues/4#issuecomment-527433112
+
+Install from his wheel a bit longer down the thread, and rename those _C.**.so and _d.**.so files to _C.so and _d.so.
+
+Torchvision works, but Pillow 7.0.0 was too new, so downgraded to 6.1 after some random comments I found.
