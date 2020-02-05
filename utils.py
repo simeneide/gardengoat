@@ -22,8 +22,8 @@ class SaveTransitions:
         event = {
             'timestamp' : ts,
             'action' : action,
-            'image_path' : filename_img,
-            'image_prev_path' : self.image_prev_path,
+            'image_next_path' : filename_img,
+            'image_path' : self.image_prev_path,
         }
 
         with open(filename_dat, "wb+") as handler:
@@ -32,7 +32,7 @@ class SaveTransitions:
         with open(filename_img, "wb+") as handler:
             pickle.dump(filename_img, handler)
             
-        self.image_prev = filename_img # update last image for next iteration
+        self.image_prev_path = filename_img # update last image for next iteration
 
 
 class Discretize_loop:
