@@ -79,7 +79,7 @@ def rgb2gray(rgb):
 class GoatCam:
     def __init__(self):
         self.camera = picamera.PiCamera()
-        self.resolution = (512,512)
+        self.resolution = (256,256)
         self.camera.resolution = self.resolution
         #self.camera.framerate = 24
         self.camera.crop = (0.0, 0.0, 1.0, 1.0)
