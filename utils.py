@@ -17,22 +17,22 @@ class SaveTransitions:
     def save_step(self, action, newimage):
         ts = datetime.datetime.now()
         filename_dat = f'{self.save_dir}/event_{str(ts).replace(" ","_")}.pickle'
-        filename_img = f'{self.save_dir}/img_{str(ts).replace(" ","_")}.pickle'
+        filename_next_img = f'{self.save_dir}/img_{str(ts).replace(" ","_")}.pickle'
         
         event = {
             'timestamp' : ts,
             'action' : action,
-            'image_next_path' : filename_img,
+            'image_next_path' : filename_next_img,
             'image_path' : self.image_prev_path,
         }
 
         with open(filename_dat, "wb+") as handler:
             pickle.dump(event, handler)
             
-        with open(filename_img, "wb+") as handler:
-            pickle.dump(filename_img, handler)
+        with open(filename_next_img, "wb+") as handler:
+            pickle.dump(newimage, handler)
             
-        self.image_prev_path = filename_img # update last image for next iteration
+        self.image_prev_path = filename_next_img # update last image for next iteration
 
 
 class Discretize_loop:
