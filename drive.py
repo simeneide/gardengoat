@@ -19,7 +19,8 @@ pygame.display.set_caption('GardenGoat')
 x = (screen.get_width() - camera.resolution[0]) / 2
 y = (screen.get_height() - camera.resolution[1]) / 2
 
-
+#### ---–--------
+##### DIFFERENT DRIVING AGENTS ######
 # DEFAULT PARS (ie dont drive, steer or cut)
 def keyboard_control(*args, **kwargs):
     keys = pygame.key.get_pressed()
@@ -98,6 +99,11 @@ def action_model(state):
         action['steer'] = 1
     return action
 
+#% SET DRIVING AGENT
+agent = keyboard_control
+
+#### ---–--------
+#### DRIVING LOOP
 state = {} # Init state
 while(exitFlag):
     discrete_timer.start()
@@ -108,7 +114,7 @@ while(exitFlag):
             exitFlag = False
     screen.fill(0)
 
-    action = action_model(state)
+    action = agent(state)
     car.drive(actiondict=action)
     
     ## CONTROL SEQUENCE
