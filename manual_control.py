@@ -70,7 +70,35 @@ def drive_to_tag(state):
 # Main loop
 exitFlag = True
 
-state = None # Init state
+## LOAD MODEL
+import torch
+import model_drive
+model = torch.load("model.pickle")
+
+def action_model(state):
+    img = state.get("image")
+    action = {
+        'throttle' : 0,
+        'steer' : 0,
+        'cut' : 0
+    }
+    
+    if img is None:
+        return action
+    yhat = model(model_drive.tr(img).unsqueeze(0))
+    action_cat = int(yhat.argmax())
+
+    if action_cat==0:
+        action['throttle'] = 1
+    elif action_cat==1:
+        action['throttle'] = -1
+    elif action_cat==2:
+        action['steer'] = -1
+    elif action_cat==3:
+        action['steer'] = 1
+    return action
+
+state = {} # Init state
 while(exitFlag):
     discrete_timer.start()
     
@@ -80,12 +108,13 @@ while(exitFlag):
             exitFlag = False
     screen.fill(0)
 
-    action = keyboard_control(state)
+    action = action_model(state)
     car.drive(actiondict=action)
     
     ## CONTROL SEQUENCE
     state = camera.step()
     img = state['image']
+    
     
     #time.sleep(0.3)
     #car.stop()
@@ -105,6 +134,7 @@ while(exitFlag):
             newimage = img)
         
     discrete_timer.end()
+    print("h")
 
 camera.close()
 pygame.display.quit()

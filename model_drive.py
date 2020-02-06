@@ -39,7 +39,7 @@ class GardenData(torch.utils.data.Dataset):
 def to_cat(throttle, steer):
     if throttle==1:
         return 0
-    if throttle==-1:
+    elif throttle==-1:
         return 1
     elif steer == -1:
         return 2
