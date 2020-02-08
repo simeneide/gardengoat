@@ -100,7 +100,7 @@ def action_model(state):
     return action
 
 #% SET DRIVING AGENT
-agent = keyboard_control
+agent = action_model
 
 #### ---–--------
 #### DRIVING LOOP
