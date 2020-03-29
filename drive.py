@@ -26,10 +26,6 @@ exitFlag = True
 import agents
 agent = agents.keyboard_local
 
-# INIT GPS
-import gpstracker
-gps = gpstracker.GPSTracker()
-
 #### ---–--------
 #### DRIVING LOOP
 state = {} # Init state
