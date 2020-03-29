@@ -66,7 +66,7 @@ class Car:
         #self.stop(duration)
 
 ################
-#### CAMERA ####
+#### SENSORS ####
 
 import time
 import picamera
@@ -76,7 +76,22 @@ import apriltag
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
-class GoatCam:
+# GET GPS SIGNAL
+from gps3.agps3threaded import AGPS3mechanism
+class GPSTracker:
+    def __init__(self):
+        self.agps_thread = AGPS3mechanism()  # Instantiate AGPS3 Mechanisms
+        self.agps_thread.stream_data()  # From localhost (), or other hosts, by example, (host='gps.ddns.net')
+        self.agps_thread.run_thread()  # Throttle time to sleep after an empty lookup, default '()' 0.2 two tenths of a second
+
+    def __call__(self):
+        return {
+            'lat' : self.agps_thread.data_stream.lat,
+            'lon' : self.agps_thread.data_stream.lon,
+            'speed' : self.agps_thread.data_stream.speed,
+        }
+
+class GoatSensor:
     def __init__(self):
         self.camera = picamera.PiCamera()
         self.resolution = (256,256)
@@ -89,6 +104,10 @@ class GoatCam:
         
         # APRILTAG INIT
         self.detector_apriltag = apriltag.Detector()
+        
+        # GPS SENSOR
+        self.gps = GPSTracker()
+        
         time.sleep(2)
     def close(self):
         self.camera.close()
@@ -110,10 +129,15 @@ class GoatCam:
         return aptag
     
     def step(self, show_apriltag = True):
-        img = self.capture()
-        aptag = self.detect_apriltag()
+        state = {}
+        state['image'] = self.capture()
+        state['apriltag'] = self.detect_apriltag()
         
-        if show_apriltag & (aptag is not None):
+        coord = self.gps()
+        state.update(coord)
+        
+        if show_apriltag & (state['apriltag'] is not None):
             corners = aptag['corners']
-            img[corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
-        return {'image' : img, 'apriltag' : aptag}
+            state['image'][corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
+            
+        return state

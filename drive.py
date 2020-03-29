@@ -10,14 +10,14 @@ car = goatcontrol.Car()
 recorder = utils.SaveTransitions()
 discrete_timer = utils.Discretize_loop(0.2)
 
-# Init camera
-camera = goatcontrol.GoatCam()
+# Init goatsensor
+goatsensor = goatcontrol.GoatSensor()
 # Init pygame
 pygame.init()
-screen = pygame.display.set_mode(camera.resolution)
+screen = pygame.display.set_mode(goatsensor.resolution)
 pygame.display.set_caption('GardenGoat')
-x = (screen.get_width() - camera.resolution[0]) / 2
-y = (screen.get_height() - camera.resolution[1]) / 2
+x = (screen.get_width() - goatsensor.resolution[0]) / 2
+y = (screen.get_height() - goatsensor.resolution[1]) / 2
 
 # Main loop
 exitFlag = True
@@ -25,6 +25,10 @@ exitFlag = True
 #% SET DRIVING AGENT
 import agents
 agent = agents.keyboard_local
+
+# INIT GPS
+import gpstracker
+gps = gpstracker.GPSTracker()
 
 #### ---–--------
 #### DRIVING LOOP
@@ -49,7 +53,7 @@ while(exitFlag):
     car.drive(actiondict=action)
     
     ## CONTROL SEQUENCE
-    state = camera.step()
+    state = goatsensor.step()
     img = state['image']
     
     
@@ -71,8 +75,8 @@ while(exitFlag):
             newimage = img)
         
     discrete_timer.end()
-    print("h")
+    print(state['lat'], state['lon'])
 
-camera.close()
+goatsensor.close()
 pygame.display.quit()
 car.stop()
