@@ -39,3 +39,15 @@ https://github.com/nmilosev/pytorch-arm-builds/issues/4#issuecomment-527433112
 Install from his wheel a bit longer down the thread, and rename those _C.**.so and _d.**.so files to _C.so and _d.so.
 
 Torchvision works, but Pillow 7.0.0 was too new, so downgraded to 6.1 after some random comments I found.
+
+
+### ps4 controller
+
+`sudo pip install pyPS4Controller`
+
+sudo pip3 install ds4drv
+
+
+sudo wget https://raw.githubusercontent.com/chrippa/ds4drv/master/udev/50-ds4drv.rules -O /etc/udev/rules.d/50-ds4drv.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
