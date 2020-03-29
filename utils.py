@@ -14,7 +14,8 @@ class SaveTransitions:
 
         self.image_prev_path = None
 
-    def save_step(self, action, newimage):
+    def save_step(self, action, state):
+        newimage = state['image']
         ts = datetime.datetime.now()
         filename_dat = f'{self.save_dir}/event_{str(ts).replace(" ","_")}.pickle'
         filename_next_img = f'{self.save_dir}/img_{str(ts).replace(" ","_")}.pickle'
@@ -25,6 +26,10 @@ class SaveTransitions:
             'image_next_path' : filename_next_img,
             'image_path' : self.image_prev_path,
         }
+        # Add sensors to event (execpt image):
+        for key, val in state.items():
+            if key != "image":
+                event[key] = val
 
         with open(filename_dat, "wb+") as handler:
             pickle.dump(event, handler)

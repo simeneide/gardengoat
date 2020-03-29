@@ -72,7 +72,7 @@ while(exitFlag):
     if sum([abs(val) for key, val in action.items()]) > 0: # i.e any action was taken
         recorder.save_step(
             action = action, 
-            newimage = img)
+            state = state)
         
     discrete_timer.end()
     print(state['lat'], state['lon'])
