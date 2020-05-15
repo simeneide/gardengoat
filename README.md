@@ -40,19 +40,7 @@ Install from his wheel a bit longer down the thread, and rename those _C.**.so a
 
 Torchvision works, but Pillow 7.0.0 was too new, so downgraded to 6.1 after some random comments I found.
 
-<<<<<<< HEAD
 
-### ps4 controller
-
-`sudo pip install pyPS4Controller`
-
-sudo pip3 install ds4drv
-
-
-sudo wget https://raw.githubusercontent.com/chrippa/ds4drv/master/udev/50-ds4drv.rules -O /etc/udev/rules.d/50-ds4drv.rules
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-=======
 Step-by-step:
 - `sudo pip3 install torch-1.1.0-cp37-cp37m-linux_armv7l.whl`
 
@@ -70,5 +58,28 @@ Can be fixed by the following:
 cd /usr/local/lib/python3.7/dist-packages/torch
 sudo mv _C.cpython-37m-arm-linux-gnueabi.so _C.so
 sudo mv _dl.cpython-37m-arm-linux-gnueabi.so _dl.so
-``
->>>>>>> 87638d075546fcb68641f00fcc64593af5c158b6
+```
+
+### Local Bluetooth keyboard
+Using the python keyboard package and requires root to run.
+Advantage: You can drive the car locally without need for stable wifi.
+
+Need to be connected and paired to the keyboard:
+Sometimes needs to be repaired:
+```
+bluetoothctl
+remove 2C:33:61:E0:77:84
+pair 2C:33:61:E0:77:84
+connect 2C:33:61:E0:77:84
+```
+### ps4 controller
+Doesnt work yet..
+
+`sudo pip install pyPS4Controller`
+
+sudo pip3 install ds4drv
+
+
+sudo wget https://raw.githubusercontent.com/chrippa/ds4drv/master/udev/50-ds4drv.rules -O /etc/udev/rules.d/50-ds4drv.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
