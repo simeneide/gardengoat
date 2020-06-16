@@ -24,7 +24,7 @@ exitFlag = True
 
 #% SET DRIVING AGENT
 import agents
-agent = agents.keyboard_local
+agent = agents.keyboard_control_pygame
 
 #### ---–--------
 #### DRIVING LOOP
@@ -37,15 +37,15 @@ while(exitFlag):
             event.type is pygame.QUIT):
             exitFlag = False
     screen.fill(0)
-    try:
-        action = agent(state)
-    except:
-        print("Agent didnt work.. Stay still.")
-        action = {
-        'throttle' : 0,
-        'steer' : 0,
-        'cut' : 0
-    }
+    #try:
+    action = agent(state, pygame)
+    #except:
+    #    print("Agent didnt work.. Staying still.")
+    #    action = {
+    #    'throttle' : 0,
+    #    'steer' : 0,
+    #    'cut' : 0
+    #}
     car.drive(actiondict=action)
     
     ## CONTROL SEQUENCE

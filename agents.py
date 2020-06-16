@@ -24,7 +24,8 @@ def keyboard_local(*args, **kwargs):
         action['cut'] = True
     return action
 
-def keyboard_control_pygame(*args, **kwargs):
+from pygame.locals import *
+def keyboard_control_pygame(state, pygame, *args, **kwargs):
     keys = pygame.key.get_pressed()
     action = {
         'throttle' : 0,
