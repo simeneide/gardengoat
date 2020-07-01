@@ -24,7 +24,7 @@ exitFlag = True
 
 #% SET DRIVING AGENT
 import agents
-agent = agents.keyboard_control_pygame
+agent = agents.keyboard_control_pygame# keyboard_local
 
 #### ---–--------
 #### DRIVING LOOP

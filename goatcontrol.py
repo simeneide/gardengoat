@@ -38,9 +38,9 @@ class Car:
         Controls how much output on each set of motors.
         """        
         for m in self.motor_left:
-            m.throttle = left
+            m.throttle = -left
         for m in self.motor_right:
-            m.throttle = right
+            m.throttle = -right
     def _control_car(self, throttle = 0, steer = 0):
         if throttle == 1:
             left = throttle  #* max(steer,0)
