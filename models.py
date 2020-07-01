@@ -10,10 +10,13 @@ class GreenNet(nn.Module):
     def forward(self, img):
         bottom_half_col = img[:,:,self.crop_y_min:,:].mean(2).mean(2)
         bottom_half_col.size()
-        green = bottom_half_col[:,1] - bottom_half_col[:,2]
-
+        bottom_half_col = bottom_half_col- bottom_half_col.mean(1) #light = bottom_half_col.mean(1)
+        green = bottom_half_col[:,1]# - bottom_half_col[:,2]
+        blue = bottom_half_col[:,2]
+        print(green,blue)
+        forward = ((green>self.th) & (green>blue))
         out = torch.zeros((len(img), 4))
-        out[(green>self.th),0] = 1.0
-        out[(green<=self.th),2] = 1.0
+        out[forward,0] = 1.0
+        out[forward==False,2] = 1.0
         #out = self.fc(bottom_half_green)
         return out
