@@ -41,28 +41,10 @@ class Car:
             m.throttle = -left
         for m in self.motor_right:
             m.throttle = -right
-    def _control_car(self, throttle = 0, steer = 0):
-        if throttle == 1:
-            left = throttle  #* max(steer,0)
-            right = throttle #*max(-steer,0)
-        if throttle == 0:
-            left = steer
-            right = -steer
-        if throttle == -1:
-            left = - 1
-            right = -1
-        self._motion(left = left, right = right)
 
-    def drive(self, actiondict = None, throttle = 0, steer = 0, cut = False, duration = None):
-        
-        if actiondict is not None:
-            throttle = actiondict['throttle']
-            steer = actiondict['steer']
-            cut = actiondict['cut']
-        
-        self._control_car(throttle = throttle, steer = steer)
+    def drive(self, left = 0, right = 0, cut = False, *args, **kwargs):
+        self._motion(left = left, right = right)
         self._cut(cut)
-        #self.stop(duration)
 
 ################
 #### SENSORS ####
@@ -85,13 +67,14 @@ class GPSTracker:
 
     def __call__(self):
         return {
+            
             'lat' : self.agps_thread.data_stream.lat,
             'lon' : self.agps_thread.data_stream.lon,
             'speed' : self.agps_thread.data_stream.speed,
         }
 
 class GoatSensor:
-    def __init__(self):
+    def __init__(self, apriltag=False):
         self.camera = picamera.PiCamera()
         self.resolution = (256,256)
         self.camera.resolution = self.resolution
@@ -102,7 +85,9 @@ class GoatSensor:
         self.img = np.empty( self.resolution+ (3,), dtype=np.uint8)
         
         # APRILTAG INIT
-        self.detector_apriltag = apriltag.Detector()
+        self.apriltag = apriltag
+        if self.apriltag:
+            self.detector_apriltag = apriltag.Detector()
         
         # GPS SENSOR
         self.gps = GPSTracker()
@@ -130,13 +115,14 @@ class GoatSensor:
     def step(self, show_apriltag = True):
         state = {}
         state['image'] = self.capture()
-        state['apriltag'] = self.detect_apriltag()
+        
         
         coord = self.gps()
         state.update(coord)
-        
-        if show_apriltag & (state['apriltag'] is not None):
-            corners = aptag['corners']
-            state['image'][corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
+        if self.apriltag:
+            state['apriltag'] = self.detect_apriltag()
+            if show_apriltag & (state['apriltag'] is not None):
+                corners = aptag['corners']
+                state['image'][corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
             
         return state

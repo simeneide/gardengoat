@@ -6,25 +6,35 @@ def keyboard_local(*args, **kwargs):
     key = keyboard.read_key()
     print(key)
     action = {
-        'throttle' : 0,
-        'steer' : 0,
+        'left' : 0,
+        'right' : 0,
         'cut' : 0
     }
-
-    if key == "w":
-        action['throttle'] = 1
+    if key == "esc":
+        action['stop'] = True
+    elif key == "w":
+        action['left'] = 1
+        action['right'] = 1
     elif key == "s":
-        action['throttle'] = -1
+        action['left'] = -1
+        action['right'] = -1
     elif key == "a":
-        action['steer'] = -1
+        action['left'] = -1
+        action['right'] = 1
     elif key == "d":
-        action['steer'] = 1
-
+        action['left'] = 1
+        action['right'] = -1
+    elif key == "q":
+        action['left'] = 0.5
+        action['right'] = 1
+    elif key == "e":
+        action['left'] = 1
+        action['right'] = 0.5
     if key == " ":
         action['cut'] = True
     return action
 
-from pygame.locals import *
+#from pygame.locals import *
 def keyboard_control_pygame(state, pygame, *args, **kwargs):
     keys = pygame.key.get_pressed()
     action = {
@@ -73,29 +83,36 @@ def drive_to_tag(state):
 
 
 ## LOAD MODEL
-#import torch
-#import model_drive
-#model = torch.load("model.pickle")
+import torch
+import model_drive
+class TorchAction:
+    def __init__(self):
 
-def action_model(state):
-    img = state.get("image")
-    action = {
-        'throttle' : 0,
-        'steer' : 0,
-        'cut' : 0
-    }
-    
-    if img is None:
+        self.model = torch.load("model.pickle")
+        
+    def __call__(self,state, *args, **kwargs):
+        img = state.get("image")
+        action = {
+            'left' : 0,
+            'right' : 0,
+            'cut' : 0
+        }
+
+        if img is None:
+            return action
+        yhat = self.model(model_drive.tr(img).unsqueeze(0))
+        action_cat = int(yhat.argmax())
+
+        if action_cat==0:
+            action['left'] = 1
+            action['right'] = 1
+        elif action_cat==1:
+            action['left'] = -1
+            action['right'] = -1
+        elif action_cat==2:
+            action['left'] = -1
+            action['right'] = -0.5
+        elif action_cat==3:
+            action['left'] = -0.5
+            action['right'] = -1
         return action
-    yhat = model(model_drive.tr(img).unsqueeze(0))
-    action_cat = int(yhat.argmax())
-
-    if action_cat==0:
-        action['throttle'] = 1
-    elif action_cat==1:
-        action['throttle'] = -1
-    elif action_cat==2:
-        action['steer'] = -1
-    elif action_cat==3:
-        action['steer'] = 1
-    return action
