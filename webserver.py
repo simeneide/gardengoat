@@ -70,6 +70,7 @@ class Webagent:
             'right' : 0,
             'cut' : 0
         }
+        key = self.key
         if key == "stop":
             action['stop'] = True
         elif key == "forward":
