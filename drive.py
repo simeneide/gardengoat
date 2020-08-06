@@ -34,7 +34,8 @@ exitFlag = True
 
 #% SET DRIVING AGENT
 import agents
-agent = agents.keyboard_local #agents.TorchAction()#keyboard_local
+import webserver
+agent = webserver.Webagent()# agents.keyboard_local #agents.TorchAction()#keyboard_local
 
 #### ---–--------
 #### DRIVING LOOP
