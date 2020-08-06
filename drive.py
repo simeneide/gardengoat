@@ -43,7 +43,7 @@ state = {} # Init state
 try:
     while(exitFlag):
         discrete_timer.start()
-        print("start")
+        #print("start")
         if visualize:
             for event in pygame.event.get():
                 if(event.type is pygame.MOUSEBUTTONDOWN or 
@@ -52,7 +52,7 @@ try:
             screen.fill(0)
 
         action = agent(state, pygame)
-        if action.get("stop"):
+        if action.get("shutdown"):
             exitFlag=False
         car.drive(**action)
 
@@ -76,6 +76,9 @@ try:
 except (KeyboardInterrupt, SystemExit):
     print("Shutting down")
     pass
+except Exception as e:
+    print("something wrong")
+    print(e)
 
 car.stop()
 goatsensor.close()
