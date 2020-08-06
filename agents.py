@@ -83,8 +83,8 @@ def drive_to_tag(state):
 
 
 ## LOAD MODEL
-import torch
-import model_drive
+#import torch
+#import model_drive
 class TorchAction:
     def __init__(self):
 

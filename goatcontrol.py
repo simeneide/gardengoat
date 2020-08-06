@@ -14,7 +14,7 @@ class Car:
     """
     def __init__(self):
         self.kit = MotorKit()
-        self.cutter = self.kit.motor3
+        self.cutter = self.kit.motor4
         self.motor_left = [self.kit.motor1]
         self.motor_right = [self.kit.motor2]
         self.all_motors = self.motor_left + self.motor_right + [self.cutter]
