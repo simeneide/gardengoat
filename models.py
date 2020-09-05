@@ -2,11 +2,12 @@ import torch
 import torch.nn as nn
 
 class GreenNet(nn.Module):
-    def __init__(self):
+    def __init__(self, load_parameters=False):
         super().__init__()
         self.crop_y_min = 100
         self.th=0.1
         self.fc = nn.Linear(1,4)
+        
     def forward(self, img):
         bottom_half_col = img[:,:,self.crop_y_min:,:].mean(2).mean(2)
         bottom_half_col.size()

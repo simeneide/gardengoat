@@ -55,5 +55,4 @@ class Discretize_loop:
         if wait < 0:
             logging.info(f"WARNING: Loop elapsed time is above step time: {elapsed_time} vs {self.step_time}")
         else:
-            print(elapsed_time)
             time.sleep(wait)
