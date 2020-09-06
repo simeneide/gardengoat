@@ -1,0 +1,8 @@
+viz/
+image/
+.DS_Store
+.vscode/
+__pycache__/
+*.stl
+*.FCStd1
+*.3mf
