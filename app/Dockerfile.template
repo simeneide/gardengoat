@@ -1,0 +1,7 @@
+FROM balenalib/raspberrypi4-64-ubuntu-python
+# Defines our working directory in container
+WORKDIR /usr/src/app
+
+COPY . ./
+
+CMD ["python", "drive.py"]

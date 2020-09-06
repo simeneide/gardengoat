@@ -1,0 +1,6 @@
+version: '2'
+services:
+  goat:
+    build: ./app
+    expose:
+      - "80"
