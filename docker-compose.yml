@@ -3,4 +3,5 @@ services:
   goat:
     build: ./app
     expose:
-      - "80"
+      - "443"
+    privileged: true

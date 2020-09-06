@@ -1,7 +1,12 @@
 FROM balenalib/raspberrypi4-64-ubuntu-python
 # Defines our working directory in container
 WORKDIR /usr/src/app
+RUN apt-get update
+RUN apt-get install -y gcc python3-dev
+COPY ./requirements.txt ./requirements.txt
 
+# add this to allow picamera to work:
+ENV READTHEDOCS True 
+RUN pip install -r requirements.txt
 COPY . ./
-
-CMD ["python", "drive.py"]
+CMD ["./run.sh"]

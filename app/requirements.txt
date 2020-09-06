@@ -1,0 +1,6 @@
+RPi.GPIO
+adafruit-circuitpython-motorkit
+picamera
+numpy
+aiohttp
+#apriltag

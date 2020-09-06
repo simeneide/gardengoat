@@ -4,6 +4,10 @@
 
 from adafruit_motorkit import MotorKit
 import time
+import numpy as np
+#import picamera
+#import apriltag
+# from gps3.agps3threaded import AGPS3mechanism
 
 class Car:
     """
@@ -49,16 +53,10 @@ class Car:
 ################
 #### SENSORS ####
 
-import time
-import picamera
-import numpy as np
-import apriltag
-
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
 # GET GPS SIGNAL
-from gps3.agps3threaded import AGPS3mechanism
 class GPSTracker:
     def __init__(self):
         self.agps_thread = AGPS3mechanism()  # Instantiate AGPS3 Mechanisms
@@ -126,3 +124,10 @@ class GoatSensor:
                 state['image'][corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
             
         return state
+
+if __name__ == "__main__":
+    print("Testing motor capabilities")
+    car = Car()
+    car._motion(-1,1)
+    car.stop(tid=2)
+    print("Done. exiting.")
