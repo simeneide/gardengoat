@@ -5,6 +5,7 @@
 from adafruit_motorkit import MotorKit
 import time
 import numpy as np
+import logging
 #import picamera
 #import apriltag
 # from gps3.agps3threaded import AGPS3mechanism
@@ -70,6 +71,14 @@ class GPSTracker:
             'lon' : self.agps_thread.data_stream.lon,
             'speed' : self.agps_thread.data_stream.speed,
         }
+
+class EmptySensor():
+    def __init__(self, **kwargs):
+        logging.info("inizalizing empty sensor")
+    def step(self,*args, **kwargs):
+        return {}
+    def close(self, *args, **kwargs):
+        pass
 
 class GoatSensor:
     def __init__(self, apriltag=False):
