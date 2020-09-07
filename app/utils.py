@@ -15,7 +15,9 @@ class SaveTransitions:
         self.image_prev_path = None
 
     def save_step(self, action, state):
-        newimage = state['image']
+        newimage = state.get('image')
+        if newimage is None:
+            logging.warning("Empty image state when saving")
         ts = datetime.datetime.now()
         filename_dat = f'{self.save_dir}/event_{str(ts).replace(" ","_")}.pickle'
         filename_next_img = f'{self.save_dir}/img_{str(ts).replace(" ","_")}.pickle'
