@@ -2,6 +2,7 @@ version: '2'
 services:
   goat:
     build: ./app
-    expose:
-      - "443"
+    ports:
+      - "443:443"
+      - "80:80"
     privileged: true
