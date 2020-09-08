@@ -1,12 +1,42 @@
-FROM balenalib/raspberrypi4-64-ubuntu-python
+FROM balenalib/raspberrypi4-64-python:3.7
 # Defines our working directory in container
 WORKDIR /usr/src/app
 RUN apt-get update
-RUN apt-get install -y gcc python3-dev
-COPY ./requirements.txt ./requirements.txt
+RUN apt-get install -y gcc python3-dev wget
+# # python3-dev
+
+# PYTORCH: https://twitter.com/ThomasViehmann/status/1302944934333382656
+RUN wget https://mathinf.com/pytorch/arm64/torch-1.6.0a0+b31f58d-cp37-cp37m-linux_aarch64.whl
+RUN wget https://mathinf.com/pytorch/arm64/torchvision-0.7.0a0+78ed10c-cp37-cp37m-linux_aarch64.whl
+#RUN sudo apt-get install -y python3-numpy python3-wheel python3-setuptools python3-future python3-yaml python3-six python3-requests python3-pip python3-pillow
+RUN sudo pip3 install torch*.whl torchvision*.whl
+
 
 # add this to allow picamera to work:
 ENV READTHEDOCS True 
+# Install all pip stuff:
+COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
+
+
+# REALSENSE INSTALLATION (found here: https://forums.balena.io/t/integrate-the-realsense-library-in-balena-ecosystem/19116/12)
+#RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
+#RUN sudo apt-get install -y git libssl-dev libusb-1.0-0-dev pkg-config libgtk-3-dev cmake libglfw3-dev build-essential
+#RUN cd / && git clone https://github.com/IntelRealSense/librealsense.git
+#RUN cd /librealsense/ && ./scripts/setup_udev_rules.sh
+#
+#RUN cd / &&\
+#    mkdir build &&\
+#    cd build &&\
+#    cmake /librealsense/ -DBUILD_EXAMPLES=true -DBUILD_GRAPHICAL_EXAMPLES=false -DCMAKE_BUILD_TYPE=Release &&\
+#    make all -j4 &&\
+#    sudo make all
+##switch on systemd init system in container
+ENV INITSYSTEM on
+
+#Run our binary on container startup
+#CMD ["/librealsense/examples/hello-realsense/rs-hello-realsense.cpp"]
+
+
 COPY . ./
 CMD ["./run.sh"]
