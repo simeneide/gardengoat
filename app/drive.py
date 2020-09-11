@@ -50,7 +50,7 @@ except (KeyboardInterrupt, SystemExit):
     print("Shutting down")
     pass
 except Exception as e:
-    print("something wrong")
+    print("something wrong:")
     print(e)
 
 car.stop()
