@@ -1,4 +1,6 @@
 version: '2'
+volumes:
+  workdir:
 services:
   goat:
     build: ./app
@@ -6,4 +8,6 @@ services:
       - "443:443"
       - "80:80"
       - "8888:8888"
+    volumes:
+      - 'workdir:/workdir'
     privileged: true
