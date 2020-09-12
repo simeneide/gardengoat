@@ -1,8 +1,10 @@
-viz/
+develop/
 image/
 .DS_Store
 .vscode/
 __pycache__/
+balena-tutorial/
+backup/
 *.stl
 *.FCStd1
 *.3mf

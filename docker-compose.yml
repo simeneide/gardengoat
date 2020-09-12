@@ -1,0 +1,9 @@
+version: '2'
+services:
+  goat:
+    build: ./app
+    ports:
+      - "443:443"
+      - "80:80"
+      - "8888:8888"
+    privileged: true
