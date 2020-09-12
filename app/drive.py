@@ -20,9 +20,8 @@ goatsensor = goatcontrol.GoatSensor()
 exitFlag = True
 
 #% SET DRIVING AGENT
-#agent = webserver.Webagent()
-import models
-agent = models.GreenNet()
+import agents
+agent = agents.GoatAgent()
 logging.info("Starting driving..")
 #### ---–--------
 #### DRIVING LOOP
@@ -41,7 +40,7 @@ try:
         state = goatsensor()
 
         ### RECORD EVENTS ###
-        if sum([abs(val) for key, val in action.items()]) > 0: # i.e any action was taken
+        if action != {}: # i.e any action was taken
             recorder.save_step(
                 action = action, 
                 state = state)

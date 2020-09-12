@@ -24,9 +24,9 @@ HTML = """
 <button class="navbutton" onclick="sendkey('left')">←</button>
 <button class="navbutton" onclick="sendkey('stop')">STOP</button>
 <button class="navbutton" onclick="sendkey('right')">→</button>
-<button class="navbutton" onclick="sendkey('backwardleft')">↙</button>
+<button class="navbutton" onclick="sendkey('backandturn')">↪️</button>
 <button class="navbutton" onclick="sendkey('backward')">↓</button>
-<button class="navbutton" onclick="sendkey('backwardright')">↘</button>
+<button class="navbutton" onclick="sendkey('AI')">💾</button>
 
 <button class="widebutton" onclick="sendkey('cut')">cut</button>
 <button class="widebutton" onclick="sendkey('speed')">speed</button>
@@ -76,53 +76,32 @@ class Webagent:
         loop.run_forever()
 
     def __call__(self, *args, **kwargs):
-        action = {
-            'left' : 0,
-            'right' : 0,
-            'cut' : self.cut
-        }
-        key = self.key
-        if key == "stop":
-            self.cut=0
-            action['cut'] = 0
-            action['left'] = 0
-            action['right'] = 0
-        elif key == "forward":
-            action['left'] = 1
-            action['right'] = 1
-        elif key == "backward":
-            action['left'] = -1
-            action['right'] = -1
-        elif key == "left":
-            action['left'] = -1
-            action['right'] = 1
-        elif key == "right":
-            action['left'] = 1
-            action['right'] = -1
-        elif key == "forwardleft":
-            action['left'] = 0.5
-            action['right'] = 1
-        elif key == "forwardright":
-            action['left'] = 1
-            action['right'] = 0.5
-        elif key == "backwardleft":
-            action['left'] = -0.5
-            action['right'] = -1
-        elif key == "backwardright":
-            action['left'] = -1
-            action['right'] = -0.5
         
-        # speed
-        if key == "speed":
-            if self.speed==1:
-                self.speed=0.5
-            elif self.speed==0.5:
-                self.speed=1
-        action['left'] = action['left']*self.speed
-        action['right'] = action['right']*self.speed
+        if self.key == "stop":
+            action = {'left' : 0, 'right' : 0, "cut" : 0}
+        elif self.key == "forward":
+            action = {'left' : 1, 'right' : 1}
+        elif self.key == "backward":
+            action = {'left' : -1, 'right' : -1}
+        elif self.key == "left":
+            action = {'left' : -1, 'right' : 1}
+
+        elif self.key == "right":
+            action = {'left' : 1, 'right' : -1}
+
+        elif self.key == "forwardleft":
+            action = {'left' : 0.5, 'right' : 1}
+
+        elif self.key == "forwardright":
+            action = {'left' : 1, 'right' : 0.5}
+
+        else:
+            action = {}
+
+        action['action'] = self.key
         
         # CUTTING:
-        if key == "cut":
+        if self.key == "cut":
             self.cut = 1-self.cut
             action['cut'] = self.cut
             self.key=None
