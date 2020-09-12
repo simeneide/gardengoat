@@ -1,8 +1,8 @@
 FROM balenalib/raspberrypi4-64-python:3.7
 # Defines our working directory in container
 WORKDIR /usr/src/app
-RUN apt-get update
-RUN apt-get install -y gcc python3-dev wget v4l-utils python3-opencv jupyter-notebook python3-matplotlib git
+RUN sudo apt-get update
+RUN sudo apt-get install -y gcc python3-dev wget v4l-utils python3-opencv jupyter-notebook python3-matplotlib git
 
 # PYTORCH: https://twitter.com/ThomasViehmann/status/1302944934333382656
 RUN wget https://mathinf.com/pytorch/arm64/torch-1.6.0a0+b31f58d-cp37-cp37m-linux_aarch64.whl
@@ -15,10 +15,10 @@ RUN sudo pip3 install torch*.whl torchvision*.whl
 ENV READTHEDOCS True 
 # Install all pip stuff:
 COPY ./requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
+RUN sudo pip install -r requirements.txt
 
 # GPS
-#RUN sudo apt-get install gpsd gpsd-clients python-gps
+RUN sudo apt-get install gpsd gpsd-clients python-gps
 
 # REALSENSE INSTALLATION (found here: https://forums.balena.io/t/integrate-the-realsense-library-in-balena-ecosystem/19116/12)
 # RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
