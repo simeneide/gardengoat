@@ -14,7 +14,7 @@ recorder = utils.SaveTransitions()
 discrete_timer = utils.Discretize_loop(0.2)
 
 # Init goatsensor
-goatsensor = goatcontrol.EmptySensor() #GoatSensor()
+goatsensor = goatcontrol.GoatSensor()
 
 # Main loop
 exitFlag = True
@@ -36,7 +36,7 @@ try:
         car.drive(**action)
 
         ## CONTROL SEQUENCE
-        state = goatsensor.step()
+        state = goatsensor()
         img = state.get('image',None)
 
         ### RECORD EVENTS ###

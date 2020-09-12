@@ -3,4 +3,5 @@ adafruit-circuitpython-motorkit
 picamera
 numpy
 aiohttp
+jupyterlab
 #apriltag

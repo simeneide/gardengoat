@@ -53,7 +53,7 @@ class Car:
 
 ################
 #### SENSORS ####
-
+import asyncio
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
@@ -82,14 +82,9 @@ class EmptySensor():
 
 class GoatSensor:
     def __init__(self, apriltag=False):
-        self.camera = picamera.PiCamera()
-        self.resolution = (256,256)
-        self.camera.resolution = self.resolution
-        #self.camera.framerate = 24
-        self.camera.crop = (0.0, 0.0, 1.0, 1.0)
-        # Init buffer
-        self.rgb = bytearray(self.camera.resolution[0] * self.camera.resolution[1] * 3)
-        self.img = np.empty( self.resolution+ (3,), dtype=np.uint8)
+        self.loop = asyncio.new_event_loop()
+        self.sensors = {}
+        self.sensors['camera'] = GoatCamera()
         
         # APRILTAG INIT
         self.apriltag = apriltag
@@ -97,14 +92,26 @@ class GoatSensor:
             self.detector_apriltag = apriltag.Detector()
         
         # GPS SENSOR
-        self.gps = GPSTracker()
+        #self.sensor['gps'] = GPSTracker()
         
         time.sleep(2)
+        
+    def __call__(self):
+        result = self.loop.run_until_complete(self.fetch_async())
+        return result
+
+    async def fetch_async(self):
+        state = {
+            name : self.loop.run_in_executor(None, sensor)
+            for name, sensor in self.sensors.items()}
+        result = await gather_dict(state)
+        return result
+
     def close(self):
-        self.camera.close()
-    def capture(self):
-        self.camera.capture(self.img,use_video_port=True, format= 'rgb')
-        return self.img
+        try:
+            self.sensors.get("camera").close()
+        except:
+            pass
 
     def detect_apriltag(self):
         gray = rgb2gray(self.img).astype(np.uint8)
@@ -118,25 +125,57 @@ class GoatSensor:
                     'centerpct' : obj.center / self.resolution
                     }
         return aptag
-    
-    def step(self, show_apriltag = True):
-        state = {}
-        state['image'] = self.capture()
-        
-        
-        coord = self.gps()
-        state.update(coord)
-        if self.apriltag:
-            state['apriltag'] = self.detect_apriltag()
-            if show_apriltag & (state['apriltag'] is not None):
-                corners = aptag['corners']
-                state['image'][corners[0,1]:corners[2,1], corners[0,0]:corners[2,0],1] = 200
-            
-        return state
+import cv2, queue, threading, time
+async def gather_dict(tasks: dict):
+    async def mark(key, coro):
+        return key, await coro
 
+    return {
+        key: result
+        for key, result in await asyncio.gather(
+            *(mark(key, coro) for key, coro in tasks.items())
+        )
+    }
+# bufferless VideoCapture
+class GoatCamera:
+    """ 
+    Module that constantly reads the camera and gives you the latest frame when called.
+    grabbed from here: https://stackoverflow.com/questions/43665208/how-to-get-the-latest-frame-from-capture-device-camera-in-opencv
+    """
+    def __init__(self, name=0):
+        self.cap = cv2.VideoCapture(name)
+        self.q = queue.Queue()
+        t = threading.Thread(target=self._reader)
+        t.daemon = True
+        t.start()
+
+    # read frames as soon as they are available, keeping only most recent one
+    def _reader(self):
+        while True:
+          ret, frame = self.cap.read()
+          if not ret:
+            break
+          if not self.q.empty():
+            try:
+              self.q.get_nowait()   # discard previous (unprocessed) frame
+            except queue.Empty:
+              pass
+          self.q.put(frame)
+
+    def __call__(self):
+        return self.q.get()
+    def close(self):
+        self.cap.release()
 if __name__ == "__main__":
     print("Testing motor capabilities")
-    car = Car()
-    car._motion(-1,1)
-    car.stop(tid=2)
-    print("Done. exiting.")
+    #car = Car()
+    #car._motion(-1,1)
+    #car.stop(tid=2)
+    print("Motor test done.")
+
+    print("Test sensors")
+    sensor = GoatSensor()
+    for i in range(5):
+        print(sensor())
+        time.sleep(1.0)
+    print("sensor test done.")
