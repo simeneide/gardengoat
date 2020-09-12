@@ -9,7 +9,7 @@ import logging
 #import picamera
 #import apriltag
 # from gps3.agps3threaded import AGPS3mechanism
-
+import cv2, queue, threading, time
 class Car:
     """
     Car can do three different things:
@@ -125,7 +125,7 @@ class GoatSensor:
                     'centerpct' : obj.center / self.resolution
                     }
         return aptag
-import cv2, queue, threading, time
+
 async def gather_dict(tasks: dict):
     async def mark(key, coro):
         return key, await coro
@@ -136,14 +136,18 @@ async def gather_dict(tasks: dict):
             *(mark(key, coro) for key, coro in tasks.items())
         )
     }
-# bufferless VideoCapture
+
+
 class GoatCamera:
     """ 
     Module that constantly reads the camera and gives you the latest frame when called.
     grabbed from here: https://stackoverflow.com/questions/43665208/how-to-get-the-latest-frame-from-capture-device-camera-in-opencv
     """
-    def __init__(self, name=0):
+    def __init__(self, name=0, width =480, height=640):
         self.cap = cv2.VideoCapture(name)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
         self.q = queue.Queue()
         t = threading.Thread(target=self._reader)
         t.daemon = True
