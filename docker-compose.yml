@@ -9,5 +9,5 @@ services:
       - "80:80"
       - "8888:8888"
     volumes:
-      - 'workdir:/workdir'
+      - 'workdir:/usr/src/app/workdir'
     privileged: true
