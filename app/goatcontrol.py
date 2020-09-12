@@ -1,7 +1,7 @@
 
 ################
 #### MOTOR ####
-
+import cv2, queue, threading, time
 from adafruit_motorkit import MotorKit
 import time
 import numpy as np
@@ -9,7 +9,6 @@ import logging
 #import picamera
 #import apriltag
 # from gps3.agps3threaded import AGPS3mechanism
-import cv2, queue, threading, time
 class Car:
     """
     Car can do three different things:
@@ -107,11 +106,15 @@ class GoatSensor:
         result = await gather_dict(state)
         return result
 
-    def close(self):
-        try:
-            self.sensors.get("camera").close()
-        except:
-            pass
+    def stop(self):
+        logging.info("stopping sensors..")
+        for key, val in self.sensors.items():
+            try:
+                val.stop()
+                logging.info(f"stopped sensor: {key}.")
+            except Exception as e:
+                logging.info(f"FAILED to stop sensor: {key}. Exception:")
+                print(e)
 
     def detect_apriltag(self):
         gray = rgb2gray(self.img).astype(np.uint8)
@@ -147,7 +150,8 @@ class GoatCamera:
         self.cap = cv2.VideoCapture(name)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
+        
+        self.run_thread=True
         self.q = queue.Queue()
         t = threading.Thread(target=self._reader)
         t.daemon = True
@@ -155,7 +159,7 @@ class GoatCamera:
 
     # read frames as soon as they are available, keeping only most recent one
     def _reader(self):
-        while True:
+        while self.run_thread:
           ret, frame = self.cap.read()
           if not ret:
             break
@@ -168,7 +172,8 @@ class GoatCamera:
 
     def __call__(self):
         return self.q.get()
-    def close(self):
+    def stop(self):
+        self.run_thread = False
         self.cap.release()
 if __name__ == "__main__":
     print("Testing motor capabilities")

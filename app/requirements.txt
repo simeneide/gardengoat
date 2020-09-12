@@ -5,3 +5,4 @@ numpy
 aiohttp
 jupyterlab
 #apriltag
+tornado==4.5.3
