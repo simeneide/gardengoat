@@ -23,6 +23,8 @@ RUN wget https://mathinf.com/pytorch/arm64/torchvision-0.7.0a0+78ed10c-cp37-cp37
 RUN sudo apt-get install -y python3-numpy python3-wheel python3-setuptools python3-future python3-yaml python3-six python3-requests python3-pip python3-pillow
 RUN pip3 install torch*.whl torchvision*.whl
 
+RUN apt-get install zip unzip
+RUN curl https://rclone.org/install.sh | sudo bash
 
 # REALSENSE INSTALLATION (found here: https://forums.balena.io/t/integrate-the-realsense-library-in-balena-ecosystem/19116/12)
 # RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get dist-upgrade -y
