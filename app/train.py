@@ -1,6 +1,9 @@
 #%%
 import os
-data_dir = "data/tub_2020-02-05 20:50:18.179332"
+tubs = os.listdir("data")
+
+episode = max(tubs)
+data_dir = f"data/{episode}"
 files = os.listdir(data_dir)
 files.sort()
 
