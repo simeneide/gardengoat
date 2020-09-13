@@ -22,22 +22,27 @@ exitFlag = True
 #% SET DRIVING AGENT
 import agents
 agent = agents.GoatAgent()
+step = 0
 logging.info("Starting driving..")
 #### ---–--------
 #### DRIVING LOOP
-state = None # Init state
 try:
     while(exitFlag):
         discrete_timer.start()
-
+        ## OBSERVE
+        state = goatsensor()
+        state['step'] = step
+        
+        ## CHOOSE ACTION
         action = agent.step(state)
         logging.info(action)
+        
         if action.get("shutdown"):
             exitFlag=False
+            
+        ## EXECUTE ACTION
         car.drive(**action)
 
-        ## CONTROL SEQUENCE
-        state = goatsensor()
 
         ### RECORD EVENTS ###
         if action != {}: # i.e any action was taken
@@ -45,9 +50,10 @@ try:
                 action = action, 
                 state = state)
 
+        step += 1
         discrete_timer.end()
 except (KeyboardInterrupt, SystemExit):
-    print("Shutting down")
+    logging.info("Shutting down")
     pass
 #except Exception as e:
 #    print("something wrong:")
