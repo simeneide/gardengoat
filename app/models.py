@@ -10,8 +10,8 @@ class GardenNet(nn.Module):
         self.idx2action = {0 : 'stop',
                           1 : 'backandturn',
                           2 : 'forward',
-                          3 : 'left',
-                          4 : 'backward'}
+                          }
+        self.num_actions = len(self.idx2action)
         
     @torch.no_grad()
     def step(self, state):
@@ -48,10 +48,11 @@ class GreenNet(GardenNet):
         blue = bottom_half_col[:,2]
         
         
-        out = torch.zeros((len(img), 4))
+        out = torch.zeros((len(img), self.num_actions))
         forward = green * (green>blue)
-        out[:,0] = self.th*0
-        out[:,1]= forward
+        out[:,0] = self.th
+        out[:,1] = random.random()*0.11
+        out[:,2]= forward
         return out
     
     

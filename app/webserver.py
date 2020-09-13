@@ -4,7 +4,7 @@ import threading
 import time
 HTML = """
   <head>
-    <title>Embedded Style Sample</title>
+    <title>Gardengoat</title>
     <style type="text/css">
       .navbutton{
         height:30%;
@@ -40,7 +40,7 @@ HTML = """
 
 class Webagent:
     def __init__(self):
-        self.key = None
+        self.key = "stop"
         self.cut = 0
         self.speed = 1
         t = threading.Thread(target=self.run_server, args=(self.aiohttp_server(),))

@@ -17,6 +17,8 @@ class GoatAgent:
 
         self.agent_ui = webserver.Webagent()
         self.agent_ai = models.GreenNet()
+        
+        self.mode = "human"
 
         # Backandturn parameters:
         self.starttime_backandturn = False
@@ -37,13 +39,14 @@ class GoatAgent:
         """ A special move that override other moves once started. """
         time_since_started = (datetime.datetime.now()-self.starttime_backandturn).seconds
         if time_since_started < self.back_time:
-            return {'left' : -1, 'right' : -1}
+            return {'left' : -1, 'right' : -1, 'action' : "backandturn"}
         elif time_since_started < (self.back_time + self.rot_time):
-            return {'left' : -1, 'right' : 1}
+            return {'left' : -1, 'right' : 1, 'action' : "backandturn"}
         else:
             logging.info("Done with backandturn move.")
             self.starttime_backandturn=False
-            self.agent_ui.key=None ##### NBNBNB THIS THING IS CANCELLING AI MODE!
+            if self.mode == "human":
+                self.agent_ui.key=None
             return {'left' : 0, 'right' : 0}
         
     def step(self, *args, **kwargs):
@@ -54,20 +57,26 @@ class GoatAgent:
         3. query ai
         """
         action = self.agent_ui(*args, **kwargs)
+
         
         # Execute UI if left or right is given:
-        if (action.get("left", False) | action.get("right", False) | action.get("cut", False)):
+        if (action.get("action") not in ['AI','backandturn']):
+            self.mode = "human" #cancel any other mode
+            self.starttime_backandturn = False
+            action['mode'] = self.mode
             return action
         
         # If we are in backturn move do that:
         if self.starttime_backandturn:
-            return self.action_backandturn()
+            action = self.action_backandturn()
         elif action.get("action") == "AI":
+            self.mode = "AI"
             action = self.agent_ai.step(*args, **kwargs)
             
         if (action.get("action") == "backandturn") & (self.starttime_backandturn is False):
-            return self.start_backandturn()
-        else:
-            return action
+            action = self.start_backandturn()
+        
+        action['mode'] = self.mode
+        return action
 
         
