@@ -2,7 +2,7 @@ FILES=$(ls data | grep tub)
 for FILE in $FILES
 do
   echo "TARRING:"
-  tar -zcvf "upload/$FILE.tar.gz" "data/$FILE"
+  tar -zcvf "upload/$FILE.tar.gz" "data/$FILE/"
 done
 
 echo "COPY..:"
