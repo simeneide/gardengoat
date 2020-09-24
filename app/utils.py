@@ -3,7 +3,8 @@ import time
 import pickle
 import os
 import logging
-import cv2
+#import cv2
+import numpy as np
 class SaveTransitions:
     def __init__(self, data_dir = "data"):
         self.data_dir = data_dir
@@ -20,26 +21,28 @@ class SaveTransitions:
             logging.warning("Step number is not set")
             
         ts = datetime.datetime.now()
-        filename_dat = f'{self.save_dir}/event_{state.get("step")}.pickle'
-        filename_img = f'{self.save_dir}/img_{state.get("step")}.jpeg'
+        filename_event = f'{self.save_dir}/event_{state.get("step")}.npy'
+        filename_data = f'{self.save_dir}/data_{state.get("step")}.npy'
         
         
         event = {
             'timestamp' : ts,
             'action' : action,
-            'image_path' : filename_img,
+            'data_path' : filename_data,
         }
         
-        # Add sensors to event (execpt image):
-        for key, val in state.items():
-            if key != "camera":
-                event[key] = val
+        # Add some sensors to event (execpt image):
+        for key in ['step']:
+            if  state.get(key):
+                event[key] = state.get(key)
         
         # SAVE
-        with open(filename_dat, "wb+") as handler:
-            pickle.dump(event, handler)
+        #with open(filename_event, "wb+") as handler:
+        #    pickle.dump(event, handler)
+        np.save(filename_event, event)    
             
-        cv2.imwrite(filename=filename_img, img=state['camera'])
+            
+        np.save(filename_data, state)
 
 class Discretize_loop:
     def __init__(self, step_time= 0.2):
