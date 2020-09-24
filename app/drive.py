@@ -19,8 +19,10 @@ goatsensor = goatcontrol.GoatSensor()
 # Main loop
 exitFlag = True
 
+import models
+
 #% SET DRIVING AGENT
-agent = webserver.Webagent()# agents.keyboard_local #agents.TorchAction()#keyboard_local
+agent = webserver.Webagent() # models.GreenNet() #
 
 #### ---–--------
 #### DRIVING LOOP
@@ -37,7 +39,6 @@ try:
 
         ## CONTROL SEQUENCE
         state = goatsensor()
-        img = state.get('image',None)
 
         ### RECORD EVENTS ###
         if sum([abs(val) for key, val in action.items()]) > 0: # i.e any action was taken
@@ -53,5 +54,6 @@ except Exception as e:
     print("something wrong:")
     print(e)
 
+# shutdown commands:
 car.stop()
-goatsensor.close()
+goatsensor.stop()

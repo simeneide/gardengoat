@@ -1,62 +1,6 @@
 #### ---–--------
 ##### DIFFERENT DRIVING AGENTS ######
 # DEFAULT PARS (ie dont drive, steer or cut)
-import keyboard
-def keyboard_local(*args, **kwargs):
-    key = keyboard.read_key()
-    print(key)
-    action = {
-        'left' : 0,
-        'right' : 0,
-        'cut' : 0
-    }
-    if key == "esc":
-        action['stop'] = True
-    elif key == "w":
-        action['left'] = 1
-        action['right'] = 1
-    elif key == "s":
-        action['left'] = -1
-        action['right'] = -1
-    elif key == "a":
-        action['left'] = -1
-        action['right'] = 1
-    elif key == "d":
-        action['left'] = 1
-        action['right'] = -1
-    elif key == "q":
-        action['left'] = 0.5
-        action['right'] = 1
-    elif key == "e":
-        action['left'] = 1
-        action['right'] = 0.5
-    if key == " ":
-        action['cut'] = True
-    return action
-
-#from pygame.locals import *
-def keyboard_control_pygame(state, pygame, *args, **kwargs):
-    keys = pygame.key.get_pressed()
-    action = {
-        'throttle' : 0,
-        'steer' : 0,
-        'cut' : 0
-    }
-
-    if keys[K_w]:
-        action['throttle'] = 1
-    elif keys[K_s]:
-        action['throttle'] = -1
-    elif keys[K_a]:
-        action['steer'] = -1
-    elif keys[K_d]:
-        action['steer'] = 1
-
-    if keys[K_SPACE]:
-        action['cut'] = True
-
-    return action
-
 import time
 def drive_to_tag(state):
     action = {

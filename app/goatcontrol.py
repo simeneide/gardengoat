@@ -77,7 +77,7 @@ class EmptySensor():
         logging.info("inizalizing empty sensor")
     def step(self,*args, **kwargs):
         return {}
-    def close(self, *args, **kwargs):
+    def stop(self, *args, **kwargs):
         pass
 
 class GoatSensor:
@@ -107,11 +107,14 @@ class GoatSensor:
         result = await gather_dict(state)
         return result
 
-    def close(self):
-        try:
-            self.sensors.get("camera").close()
-        except:
-            pass
+    def stop(self):
+        for key, val in self.sensors.items():
+            try:
+                val.stop()
+                logging.info(f"Stopped sensor {key}.")
+            except Exception as e:
+                logging.info(f"Failed to stop sensor {key}. Error:")
+                logging.info(e)
 
     def detect_apriltag(self):
         gray = rgb2gray(self.img).astype(np.uint8)
@@ -164,7 +167,8 @@ class GoatCamera:
 
     def __call__(self):
         return self.q.get()
-    def close(self):
+    
+    def stop(self):
         self.cap.release()
 if __name__ == "__main__":
     print("Testing motor capabilities")
