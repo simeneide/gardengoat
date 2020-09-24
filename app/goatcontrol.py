@@ -2,54 +2,54 @@
 ################
 #### MOTOR ####
 import cv2, queue, threading, time
-from adafruit_motorkit import MotorKit
 import time
 import numpy as np
 import logging
+import pyrealsense2 as rs
 #import picamera
 #import apriltag
 # from gps3.agps3threaded import AGPS3mechanism
-class Car:
-    """
-    Car can do three different things:
-    - Throttle = discrete {-1,0,1}: -1 is backward, 0 is standing and +1 is forward
-    - Steer = continuous [-1,1] where -1 is going left and +1 is going right
-    - cut: False/True
-    """
-    def __init__(self):
-        self.kit = MotorKit()
-        self.cutter = self.kit.motor4
-        self.motor_left = [self.kit.motor1]
-        self.motor_right = [self.kit.motor2]
-        self.all_motors = self.motor_left + self.motor_right + [self.cutter]
         
-    def stop(self, tid = 0):
-        """
-        The most important function. stops all motors!
-        """
-        time.sleep(tid)
-        for m in self.all_motors:
-            m.throttle = 0
+import sys
+import time
+import RPi.GPIO as GPIO
+class Car:
+    def __init__(self):
+        self.gpio_map = {
+            'left' : {
+                'forward' : 26,
+                'backward' : 20
+            },
+            'right' : {
+                'forward' : 19,
+                'backward' : 16
+            }
+        }
+        GPIO.cleanup()
+        GPIO.setmode(GPIO.BCM)
+        for side, motors in self.gpio_map.items():
+            for key, val in motors.items():
+                print(f"{side}-{key}-{val}")
+                GPIO.setup(val, GPIO.OUT)
+        logging.info(f"driving controls initialized.")
+        
+    def drive(self, left=0, right=0, cut=False , *args, **kwargs):
+        if left>=0:
+            GPIO.output(self.gpio_map['left']['forward'], left)
+            GPIO.output(self.gpio_map['left']['backward'], 0)
+        if left<=0:
+            GPIO.output(self.gpio_map['left']['backward'], -left)
+            GPIO.output(self.gpio_map['left']['forward'], 0)
+        if right>=0:
+            GPIO.output(self.gpio_map['right']['forward'], right)
+            GPIO.output(self.gpio_map['right']['backward'], 0)
+        if right<=0:
+            GPIO.output(self.gpio_map['right']['backward'], -right)
+            GPIO.output(self.gpio_map['right']['forward'], 0)
             
-    def _cut(self, action):
-        if action == True:
-            self.cutter.throttle = 1.0
-        else:
-            self.cutter.throttle = 0
-                    
-    def _motion(self, left=0, right=0):
-        """
-        Controls how much output on each set of motors.
-        """        
-        for m in self.motor_left:
-            m.throttle = -left
-        for m in self.motor_right:
-            m.throttle = -right
-
-    def drive(self, left = 0, right = 0, cut = False, *args, **kwargs):
-        self._motion(left = left, right = right)
-        self._cut(cut)
-
+    def close(self):
+        GPIO.cleanup()
+        
         
 ################
 #### SENSORS ####
@@ -77,14 +77,14 @@ class EmptySensor():
         logging.info("inizalizing empty sensor")
     def step(self,*args, **kwargs):
         return {}
-    def stop(self, *args, **kwargs):
+    def close(self, *args, **kwargs):
         pass
 
 class GoatSensor:
     def __init__(self, apriltag=False):
         self.loop = asyncio.new_event_loop()
         self.sensors = {}
-        self.sensors['camera'] = GoatCamera()
+        self.sensors['realsense'] = DepthCamera()
         
         # APRILTAG INIT
         self.apriltag = apriltag
@@ -101,20 +101,25 @@ class GoatSensor:
         return result
 
     async def fetch_async(self):
-        state = {
-            name : self.loop.run_in_executor(None, sensor)
+        state = {name:
+            self.loop.run_in_executor(None, sensor)
             for name, sensor in self.sensors.items()}
-        result = await gather_dict(state)
+        state = await gather_dict(state)
+        
+        result = {}
+        for topkey, d in state.items():
+            for key, val in d.items():
+                result[key] = val
         return result
 
-    def stop(self):
-        logging.info("stopping sensors..")
+    def close(self):
+        logging.info("closing sensors..")
         for key, val in self.sensors.items():
             try:
-                val.stop()
-                logging.info(f"stopped sensor: {key}.")
+                val.close()
+                logging.info(f"closed sensor: {key}.")
             except Exception as e:
-                logging.info(f"FAILED to stop sensor: {key}. Exception:")
+                logging.info(f"FAILED to close sensor: {key}. Exception:")
                 print(e)
                 
     def detect_apriltag(self):
@@ -141,6 +146,42 @@ async def gather_dict(tasks: dict):
         )
     }
 
+def coord2array(coord):
+    return np.array([coord.x, coord.y, coord.z])
+
+class DepthCamera:
+    def __init__(self):
+        self.pipe = rs.pipeline()
+        self.fps=10
+        self.resolution = {'x':640,'y':480}
+        conf = rs.config()
+        conf.enable_stream(rs.stream.accel)
+        conf.enable_stream(rs.stream.gyro)
+        #conf.enable_stream(rs.stream.depth)
+        #conf.enable_stream(rs.stream.color)
+
+        #Setup streaming and recording
+        conf.enable_stream(rs.stream.depth, self.resolution['x'], 
+                                    self.resolution['y'])
+        conf.enable_stream(rs.stream.color, self.resolution['x'], 
+                                    self.resolution['y'])
+        self.profile = self.pipe.start(conf)
+        self.depth_scale = self.profile.get_device().first_depth_sensor().get_depth_scale()
+        for x in range(5):
+          self.pipe.wait_for_frames()
+        logging.info("depth camera initialized.")
+        
+    def __call__(self):
+        frame = self.pipe.wait_for_frames()
+        out = {}
+        #out['frame'] = frame
+        out['camera'] = np.asanyarray(frame.get_color_frame().get_data())
+        out['depth_frame'] = np.asanyarray(frame.get_depth_frame().get_data())#*self.depth_scale
+        out['pose'] = coord2array(frame[2].as_motion_frame().get_motion_data()) # unsure whether this is motion of accel
+        out['acceleration'] = coord2array(frame[3].as_motion_frame().get_motion_data()) # unsure whether this is motion of accel
+        return out
+    def close(self):
+        self.pipe.stop()
 
 class GoatCamera:
     """ 
@@ -173,19 +214,16 @@ class GoatCamera:
 
     def __call__(self):
         return self.q.get()
-<<<<<<< HEAD
-    
-    def stop(self):
-=======
-    def stop(self):
+
+    def close(self):
         self.run_thread = False
->>>>>>> 8de3cc20962cf7bc7400c6cda59ce8d88d766df1
         self.cap.release()
+        
 if __name__ == "__main__":
     print("Testing motor capabilities")
-    #car = Car()
-    #car._motion(-1,1)
-    #car.stop(tid=2)
+    car = Car()
+    car._motion(-1,1)
+    car.close(tid=2)
     print("Motor test done.")
 
     print("Test sensors")

@@ -34,6 +34,12 @@ try:
         state = goatsensor()
         state['step'] = step
         
+        for key, val in state.items():
+            try:
+                print(f"{key}: {val.shape}")
+            except:
+                print(key, val)
+                
         ## CHOOSE ACTION
         action = agent.step(state)
         logging.info(action)
@@ -60,5 +66,5 @@ except (KeyboardInterrupt, SystemExit):
 #    print(e)
 
 # shutdown commands:
-car.stop()
-goatsensor.stop()
+car.close()
+goatsensor.close()
