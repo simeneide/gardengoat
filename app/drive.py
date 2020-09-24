@@ -20,39 +20,44 @@ goatsensor = goatcontrol.GoatSensor()
 exitFlag = True
 
 import models
-
 #% SET DRIVING AGENT
-agent = webserver.Webagent() # models.GreenNet() #
-
+import agents
+agent = agents.GoatAgent()
+step = 0
+logging.info("Starting driving..")
 #### ---–--------
 #### DRIVING LOOP
-state = {} # Init state
 try:
     while(exitFlag):
         discrete_timer.start()
-
-        action = agent(state)
+        ## OBSERVE
+        state = goatsensor()
+        state['step'] = step
+        
+        ## CHOOSE ACTION
+        action = agent.step(state)
         logging.info(action)
+        
         if action.get("shutdown"):
             exitFlag=False
+            
+        ## EXECUTE ACTION
         car.drive(**action)
 
-        ## CONTROL SEQUENCE
-        state = goatsensor()
-
         ### RECORD EVENTS ###
-        if sum([abs(val) for key, val in action.items()]) > 0: # i.e any action was taken
+        if action != {}: # i.e any action was taken
             recorder.save_step(
                 action = action, 
                 state = state)
 
+        step += 1
         discrete_timer.end()
 except (KeyboardInterrupt, SystemExit):
-    print("Shutting down")
+    logging.info("Shutting down")
     pass
-except Exception as e:
-    print("something wrong:")
-    print(e)
+#except Exception as e:
+#    print("something wrong:")
+#    print(e)
 
 # shutdown commands:
 car.stop()

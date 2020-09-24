@@ -3,44 +3,43 @@ import time
 import pickle
 import os
 import logging
+import cv2
 class SaveTransitions:
     def __init__(self, data_dir = "data"):
         self.data_dir = data_dir
-        self.tub = f"tub_{datetime.datetime.now()}"
+        self.tub = f"tub_{datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S')}"
         self.save_dir = f"{self.data_dir}/{self.tub}"
         
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
 
-        self.image_prev_path = None
-
     def save_step(self, action, state):
-        newimage = state.get('image')
-        if newimage is None:
+        if state.get('camera') is None:
             logging.warning("Empty image state when saving")
+        if state.get("step") is None:
+            logging.warning("Step number is not set")
+            
         ts = datetime.datetime.now()
-        filename_dat = f'{self.save_dir}/event_{str(ts).replace(" ","_")}.pickle'
-        filename_next_img = f'{self.save_dir}/img_{str(ts).replace(" ","_")}.pickle'
+        filename_dat = f'{self.save_dir}/event_{state.get("step")}.pickle'
+        filename_img = f'{self.save_dir}/img_{state.get("step")}.jpeg'
+        
         
         event = {
             'timestamp' : ts,
             'action' : action,
-            'image_next_path' : filename_next_img,
-            'image_path' : self.image_prev_path,
+            'image_path' : filename_img,
         }
+        
         # Add sensors to event (execpt image):
         for key, val in state.items():
-            if key != "image":
+            if key != "camera":
                 event[key] = val
-
+        
+        # SAVE
         with open(filename_dat, "wb+") as handler:
             pickle.dump(event, handler)
             
-        with open(filename_next_img, "wb+") as handler:
-            pickle.dump(newimage, handler)
-            
-        self.image_prev_path = filename_next_img # update last image for next iteration
-
+        cv2.imwrite(filename=filename_img, img=state['camera'])
 
 class Discretize_loop:
     def __init__(self, step_time= 0.2):

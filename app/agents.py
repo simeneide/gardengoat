@@ -1,62 +1,89 @@
-#### ---–--------
-##### DIFFERENT DRIVING AGENTS ######
-# DEFAULT PARS (ie dont drive, steer or cut)
+import webserver
+import models
+import random
+import datetime
+import logging
 import time
-def drive_to_tag(state):
-    action = {
-        'throttle' : 0,
-        'steer' : 0,
-        'cut' : 0
-    }
-    apriltag = state['apriltag']
-    if apriltag:
-        angle = (apriltag['centerpct'][0]-0.5).round(3)
-        if abs(angle) <0.03:
-            action['throttle'] = 1
-            action['steer'] = 0
-        else:
-            action['throttle']=0
-            action['steer'] = np.sign(angle)
-            
-        print(f"throttle = {action['throttle']}, steer = {action['steer']}, angle: {angle}")
-    else:
-        action['throttle'] = 0.0
-        action['steer'] = 1
-        print(f"throttle = {action['throttle']}, steer = {action['steer']}, searching..")
-    return action
 
-
-## LOAD MODEL
-#import torch
-#import model_drive
-class TorchAction:
+class GoatAgent:
     def __init__(self):
-
-        self.model = torch.load("model.pickle")
-        
-    def __call__(self,state, *args, **kwargs):
-        img = state.get("image")
-        action = {
-            'left' : 0,
-            'right' : 0,
-            'cut' : 0
+        self.idx2action = {
+            0 : 'stop',
+            1 : 'backandturn',
+            2 : 'forward',
+            3 : 'left',
+            4 : 'backward'
         }
 
-        if img is None:
-            return action
-        yhat = self.model(model_drive.tr(img).unsqueeze(0))
-        action_cat = int(yhat.argmax())
+        self.agent_ui = webserver.Webagent()
+        self.agent_ai = models.GreenNet()
+        
+        self.mode = "human"
+        self.active_option = None
+        
+    def step(self, *args, **kwargs):
+        """
+        # priority:
+        1. query ui
+        2. conduct backandturn
+        3. query ai
+        """
+        action = self.agent_ui(*args, **kwargs)
 
-        if action_cat==0:
-            action['left'] = 1
-            action['right'] = 1
-        elif action_cat==1:
-            action['left'] = -1
-            action['right'] = -1
-        elif action_cat==2:
-            action['left'] = -1
-            action['right'] = -0.5
-        elif action_cat==3:
-            action['left'] = -0.5
-            action['right'] = -1
+        
+        # Execute UI straight away if actions are given:
+        if (action.get("action") not in ['AI','backandturn']):
+            self.mode = "human" #cancel any other mode
+            self.active_option = None
+            self.starttime_backandturn = False
+            action['mode'] = self.mode
+            if self.active_option:
+                action['active_option'] = self.active_option.name
+            return action
+        elif action.get("action") == "AI":
+            self.mode = "AI"
+        
+        if self.active_option:
+            action, done = self.active_option()
+            print(done)
+            if done:
+                self.active_option=None
+                if self.mode == "human":
+                    self.agent_ui.key=None
+                
+        elif self.mode =="AI":
+            action = self.agent_ai.step(*args, **kwargs)
+
+        if (action.get("action") == "backandturn") & (not self.active_option):
+            self.active_option = BackAndTurn()
+            
+        
+        action['mode'] = self.mode
+        if self.active_option:
+            action['active_option'] = self.active_option.name
         return action
+
+class BackAndTurn:
+    def __init__(self, back_time=None, rot_time=None):
+        # Backandturn parameters:
+        self.name = "BackAndTurn"
+        self.starttime_backandturn = datetime.datetime.now()
+        self.back_time = None
+        self.rot_time = None
+        
+        if back_time is None:
+            self.back_time = 2
+        if rot_time is None:
+            self.rot_time = random.randint(2,4)
+        logging.info(f"Starting backandturn manouvre..: back={self.back_time}, turn={self.rot_time}")
+
+    def __call__(self):
+        """ A special move that override other moves once started. """
+        time_since_started = (datetime.datetime.now()-self.starttime_backandturn).seconds
+        if time_since_started < self.back_time:
+            return {'left' : -1, 'right' : -1, 'action' : "backandturn"}, False
+        elif time_since_started < (self.back_time + self.rot_time):
+            return {'left' : -1, 'right' : 1, 'action' : "backandturn"}, False
+        else:
+            logging.info("Done with backandturn move.")
+            return {'left' : 0, 'right' : 0}, True
