@@ -21,8 +21,8 @@ class SaveTransitions:
             logging.warning("Step number is not set")
             
         ts = datetime.datetime.now()
-        filename_event = f'{self.save_dir}/event_{state.get("step")}.npy'
-        filename_data = f'{self.save_dir}/data_{state.get("step")}.npy'
+        filename_event = f'{self.save_dir}/event_{state.get("step")}.pickle'
+        filename_data = f'{self.save_dir}/data_{state.get("step")}.pickle'
         
         
         event = {
@@ -37,12 +37,11 @@ class SaveTransitions:
                 event[key] = state.get(key)
         
         # SAVE
-        #with open(filename_event, "wb+") as handler:
-        #    pickle.dump(event, handler)
-        np.save(filename_event, event)    
+        with open(filename_event, "wb+") as handler:
+            pickle.dump(event, handler)
             
-            
-        np.save(filename_data, state)
+        with open(filename_data, "wb+") as handler:
+            pickle.dump(state, handler)
 
 class Discretize_loop:
     def __init__(self, step_time= 0.2):
