@@ -13,6 +13,7 @@ from torchvision import datasets, models, transforms
 import pickle
 import cv2
 import PIL
+import utils
 ### SUPPORTED ACTIONS
 idx2action = {
     0 : '<UNK>',
@@ -27,6 +28,7 @@ mean_nums = [0.485, 0.456, 0.406]
 std_nums = [0.229, 0.224, 0.225]
 
 tr = transforms.Compose([
+        transforms.ToPILImage(),
         transforms.RandomResizedCrop(size=256),
         #transforms.RandomRotation(degrees=15),
         #transforms.RandomHorizontalFlip(),
@@ -43,10 +45,16 @@ class GardenData(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         row = self.dat.iloc[idx]
 
-        out = {
-            'image' : tr(PIL.Image.open(row.image_path)),
-            'action' : action2idx.get(row.action,0)}
+        data_dict = utils.loader(row.data_path)
+        out ={}
+        for key in ['acceleration']:
+            out[key] = data_dict[key].astype("float")
+        out['camera'] = tr(data_dict['camera'])
+        #data_dict['depth_frame'] = tr(data_dict['depth_frame'])
+        out['action'] = action2idx.get(row.action,0)
+
         return out
+
     def __len__(self):
         return len(self.dat)
 

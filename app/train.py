@@ -12,28 +12,24 @@ logging.basicConfig(format='%(asctime)s %(message)s', level='INFO')
 import pickle
 import matplotlib.pyplot as plt
 import cv2
+import utils
 #%%
-tubs = os.listdir("data")
+data_dir = "../data/data/"
+tubs = os.listdir(data_dir)
 
-episode = 'tub_2020-09-14.10:47:48' #max(tubs)
-data_dir = f"data/{episode}"
+episode = max(tubs)
+data_dir = f"{data_dir}/{episode}"
 files = os.listdir(data_dir)
 files.sort()
 
 event_files = [f for f in files if "event" in f]
 
 #%%
-
-def loader(path):
-    with open(path, "rb") as handle:
-        dat = pickle.load(handle)
-    return dat
-
 L = []
 for filename in event_files:
     try:
         path = f"{data_dir}/{filename}"
-        l = loader(path)
+        l = utils.loader(path)
         L.append(l)
     except:
         logging.warning(f"Failed to load {path}")
@@ -45,7 +41,11 @@ logging.info(f"Loaded {len(dat)} events into dataframe.")
 dat['action_dict'] = dat['action']
 dat['active_option'] = dat.action_dict.map(lambda d: d.get("active_option", False)=="BackAndTurn")
 dat['action'] = dat.action_dict.map(lambda a: a.get('action'))
+dat = dat[(dat.action!="favicon.ico")]
 dat = dat[(dat.action!="stop")]
+
+# Get full path to data (No need to just take basename here in next iteration)
+dat['data_path'] = dat['data_path'].map(lambda s: f"{data_dir}/{os.path.basename(s)}")
 
 # remove all images that are well within the active option. 
 # we dont want to learn here...
@@ -55,12 +55,7 @@ dat = dat.dropna().sort_values("step").reset_index(drop=True)
 logging.info(f"After filters we have {len(dat)} events in dataframe.")
 
 dat['action'].hist()
-dat.head()
-
-
-#%%
-#plt.plot(dat['active_option'])
-
+#dat.head()
 #%% LOAD IMAGE TO TEST
 #plt.imshow(cv2.imread(dat.image_path[1]))
 
@@ -91,7 +86,7 @@ for ep in range(num_epochs):
     for batch in dataloaders[phase]:
         batch = {key : val.to(device) for key, val in batch.items()}
         optimizer.zero_grad()
-        yhat = model(batch['image'])
+        yhat = model(batch['camera'])
         loss = criterion(yhat, batch['action'])
         if phase == 'train':
             loss.backward()
@@ -115,5 +110,5 @@ plt.hist(scores.argmax(1).detach().cpu())
 #%%
 plt.hist(batch['action'].detach().cpu())
 # %%
-torch.save(model.state_dict(),"conv_parameters.pt")
+torch.save(model.state_dict(),"trained_parameters/conv_parameters.pt")
 # %%

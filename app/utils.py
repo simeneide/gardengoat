@@ -5,6 +5,11 @@ import os
 import logging
 #import cv2
 import numpy as np
+def loader(path):
+    with open(path, "rb") as handle:
+        dat = pickle.load(handle)
+    return dat
+
 class SaveTransitions:
     def __init__(self, data_dir = "data"):
         self.data_dir = data_dir
@@ -22,8 +27,8 @@ class SaveTransitions:
             
         ts = datetime.datetime.now()
         filename_event = f'{self.save_dir}/event_{state.get("step")}.pickle'
-        filename_data = f'{self.save_dir}/data_{state.get("step")}.pickle'
-        
+        filename_data = f"data_{state.get('step')}.pickle"
+        path_data = f'{self.save_dir}/{filename_data}'
         
         event = {
             'timestamp' : ts,
