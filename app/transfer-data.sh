@@ -1,3 +1,4 @@
+mkdir upload
 FILES=$(ls data | grep tub)
 for FILE in $FILES
 do
