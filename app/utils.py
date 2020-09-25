@@ -13,7 +13,7 @@ def loader(path):
 class SaveTransitions:
     def __init__(self, data_dir = "data"):
         self.data_dir = data_dir
-        self.tub = f"tub_{datetime.datetime.now().strftime('%Y-%m-%d.%H:%M:%S')}"
+        self.tub = f"tub_{datetime.datetime.now().strftime('%Y-%m-%d.%H%M%S')}"
         self.save_dir = f"{self.data_dir}/{self.tub}"
         
         if not os.path.exists(self.save_dir):
