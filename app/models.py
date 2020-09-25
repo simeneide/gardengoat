@@ -81,8 +81,8 @@ class GardenNet(nn.Module):
         if state is None:
             return {}
         else:
-            img = tr(state['depth_frame'])
-            actionscores = self.forward(img).squeeze()
+            img = tr_depth(state['depth_frame']).unsqueeze(0)
+            actionvec = self.forward(img).squeeze()
 
             actionvec[2] = actionvec[2]*1.3 # Increase stopandturn by threshold
 
@@ -112,6 +112,8 @@ class ConvNet(GardenNet):
             
         self.fc = nn.Linear(256, self.num_actions)
 
+        self.load_state_dict(torch.load("trained_parameters/conv_parameters.pt", map_location=torch.device('cpu')))
+        logging.info("Loaded conv par")
     def forward(self, img):
         x = img
         for layer in self.layers:
