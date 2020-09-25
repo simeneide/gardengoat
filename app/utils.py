@@ -45,7 +45,7 @@ class SaveTransitions:
         with open(filename_event, "wb+") as handler:
             pickle.dump(event, handler)
             
-        with open(filename_data, "wb+") as handler:
+        with open(path_data, "wb+") as handler:
             pickle.dump(state, handler)
 
 class Discretize_loop:
