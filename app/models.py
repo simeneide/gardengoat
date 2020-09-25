@@ -27,13 +27,24 @@ action2idx = {val : key for key, val in idx2action.items()}
 mean_nums = [0.485, 0.456, 0.406]
 std_nums = [0.229, 0.224, 0.225]
 
-tr = transforms.Compose([
+tr_rgb = transforms.Compose([
         transforms.ToPILImage(),
         transforms.RandomResizedCrop(size=256),
         #transforms.RandomRotation(degrees=15),
         #transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean_nums, std_nums)
+])
+
+tr_depth = transforms.Compose([
+        lambda x: x.astype("int32"),
+        transforms.ToPILImage(),
+        transforms.RandomResizedCrop(size=256),
+        #transforms.RandomRotation(degrees=15),
+        #transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        lambda x: x/5000.
+        #transforms.Normalize(mean_nums, std_nums)
 ])
 
 ### DATALOADERS ###
@@ -49,8 +60,8 @@ class GardenData(torch.utils.data.Dataset):
         out ={}
         for key in ['acceleration']:
             out[key] = data_dict[key].astype("float")
-        out['camera'] = tr(data_dict['camera'])
-        #data_dict['depth_frame'] = tr(data_dict['depth_frame'])
+        out['camera'] = tr_rgb(data_dict['camera'])
+        out['depth_frame'] = tr_depth(data_dict['depth_frame'])
         out['action'] = action2idx.get(row.action,0)
 
         return out
@@ -70,8 +81,10 @@ class GardenNet(nn.Module):
         if state is None:
             return {}
         else:
-            img = tr(state['camera'])
-            actionvec = self.forward(img)
+            img = tr(state['depth_frame'])
+            actionscores = self.forward(img).squeeze()
+
+            actionvec[2] = actionvec[2]*1.3 # Increase stopandturn by threshold
 
             action = self.idx2action[actionvec.argmax().item()]
             logging.info(f"AI says: {action}")
@@ -86,7 +99,7 @@ class ConvNet(GardenNet):
     def __init__(self, input_size=256):
         super().__init__()
         self.input_size = input_size
-        self.channels = [3,16,32,64]
+        self.channels = [1,16,32,64]
         self.layers = nn.ModuleList()
         for i in range(1,len(self.channels)):
             self.layers.append(

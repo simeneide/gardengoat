@@ -16,7 +16,7 @@ class GoatAgent:
         }
 
         self.agent_ui = webserver.Webagent()
-        self.agent_ai = models.GreenNet()
+        self.agent_ai = models.ConvNet()
         
         self.mode = "human"
         self.active_option = None
