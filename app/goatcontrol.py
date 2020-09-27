@@ -23,6 +23,9 @@ class Car:
             'right' : {
                 'forward' : 19,
                 'backward' : 16
+            },
+            'cutter' : {
+                'power' : 6
             }
         }
         GPIO.cleanup()
@@ -47,7 +50,13 @@ class Car:
             GPIO.output(self.gpio_map['right']['backward'], -right)
             GPIO.output(self.gpio_map['right']['forward'], 0)
             
+        if cut:
+            GPIO.output(self.gpio_map['cutter']['power'], 1)
+        else:
+            GPIO.output(self.gpio_map['cutter']['power'], 0)
+            
     def close(self):
+        GPIO.output(self.gpio_map['cutter']['power'], 0)
         GPIO.cleanup()
         
         
@@ -222,8 +231,11 @@ class GoatCamera:
 if __name__ == "__main__":
     print("Testing motor capabilities")
     car = Car()
-    car._motion(-1,1)
-    car.close(tid=2)
+    car.drive(-1,1, cut=False)
+    time.sleep(1)
+    car.drive(0,0, cut=True)
+    time.sleep(1)
+    car.close()
     print("Motor test done.")
 
     print("Test sensors")
