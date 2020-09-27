@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s %(message)s', level='INFO')
 
 car = goatcontrol.Car()
 recorder = utils.SaveTransitions()
-discrete_timer = utils.Discretize_loop(0.2)
+discrete_timer = utils.Discretize_loop(0.1)
 
 # Init goatsensor
 goatsensor = goatcontrol.GoatSensor()
@@ -33,12 +33,6 @@ try:
         ## OBSERVE
         state = goatsensor()
         state['step'] = step
-        
-        for key, val in state.items():
-            try:
-                print(f"{key}: {val.shape}")
-            except:
-                print(key, val)
                 
         ## CHOOSE ACTION
         action = agent.step(state)
