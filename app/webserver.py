@@ -54,6 +54,8 @@ class Webagent:
         key = request.match_info.get('key')#.encode()
         self.key = key
         print(self.key)
+        if key == "cut":
+            self.cut= (1-self.cut)
         return await self.index(request)
 
     def setup_routes(self, app):
@@ -78,6 +80,7 @@ class Webagent:
     def __call__(self, *args, **kwargs):
         
         if self.key == "stop":
+            self.cut = 0
             action = {'left' : 0, 'right' : 0, "cut" : 0}
         elif self.key == "forward":
             action = {'left' : 1, 'right' : 1}
@@ -98,13 +101,9 @@ class Webagent:
         else:
             action = {}
 
+        # Special values:
         action['action'] = self.key
-        
-        # CUTTING:
-        if self.key == "cut":
-            self.cut = 1-self.cut
-            action['cut'] = self.cut
-            self.key=None
+        action['cut'] = self.cut
         return action
 
 if __name__ == "__main__":
