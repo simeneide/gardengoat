@@ -10,22 +10,20 @@ import pyrealsense2 as rs
 #import apriltag
 # from gps3.agps3threaded import AGPS3mechanism
         
-import sys
-import time
-import RPi.GPIO as GPIO
+def output_list(pins, value):
+    for pin in pins:
+        GPIO.output(pin, value)
+
 class Car:
     def __init__(self):
         self.gpio_map = {
             'left' : {
-                'forward' : 26,
-                'backward' : 20
+                'forward' : [6,26],
+                'backward' : [13,20]
             },
             'right' : {
-                'forward' : 19,
-                'backward' : 16
-            },
-            'cutter' : {
-                'power' : 6
+                'forward' : [5,19],
+                'backward' : [12,16]
             }
         }
         GPIO.cleanup()
@@ -38,25 +36,19 @@ class Car:
         
     def drive(self, left=0, right=0, cut=False , *args, **kwargs):
         if left>=0:
-            GPIO.output(self.gpio_map['left']['forward'], left)
-            GPIO.output(self.gpio_map['left']['backward'], 0)
+            output_list(self.gpio_map['left']['forward'], left)
+            output_list(self.gpio_map['left']['backward'], 0)
         if left<=0:
-            GPIO.output(self.gpio_map['left']['backward'], -left)
-            GPIO.output(self.gpio_map['left']['forward'], 0)
+            output_list(self.gpio_map['left']['backward'], -left)
+            output_list(self.gpio_map['left']['forward'], 0)
         if right>=0:
-            GPIO.output(self.gpio_map['right']['forward'], right)
-            GPIO.output(self.gpio_map['right']['backward'], 0)
+            output_list(self.gpio_map['right']['forward'], right)
+            output_list(self.gpio_map['right']['backward'], 0)
         if right<=0:
-            GPIO.output(self.gpio_map['right']['backward'], -right)
-            GPIO.output(self.gpio_map['right']['forward'], 0)
-            
-        if cut:
-            GPIO.output(self.gpio_map['cutter']['power'], 1)
-        else:
-            GPIO.output(self.gpio_map['cutter']['power'], 0)
+            output_list(self.gpio_map['right']['backward'], -right)
+            output_list(self.gpio_map['right']['forward'], 0)
             
     def close(self):
-        GPIO.output(self.gpio_map['cutter']['power'], 0)
         GPIO.cleanup()
         
         

@@ -48,11 +48,13 @@ ENV INITSYSTEM on
 RUN cd /build &&\
     cmake ../librealsense/ -DBUILD_PYTHON_BINDINGS=bool:true -DPYTHON_EXECUTABLE=$(which python3) &&\
     make -j1 &&\
-    sudo make install &&\
-    PYTHONPATH=$PYTHONPATH:/usr/local/lib &&
+    sudo make install
+
+RUN export PYTHONPATH=$PYTHONPATH:/usr/local/lib
 
 # COPY INIT wrapper to package (found here: https://github.com/IntelRealSense/meta-intel-realsense/issues/20)
 RUN sudo cp /librealsense/wrappers/python/pyrealsense2/__init__.py /usr/lib/python3/dist-packages/pyrealsense2/
 
+COPY secrets/rclone.conf /root/.config/rclone/rclone.conf
 COPY . ./
 CMD ["./run.sh"]
