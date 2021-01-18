@@ -69,7 +69,17 @@ class GardenData(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.dat)
 
-
+class DepthAvgNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def step(self, state):
+        avg_dist = state['depth_frame'].mean()
+        if avg_dist > 200:
+            out = {'left' : 1, 'right' : 1, 'action' : "forward"}
+        else:
+            out = {'action' : "backandturn"}
+        return out
 class GardenNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -112,7 +122,7 @@ class ConvNet(GardenNet):
             
         self.fc = nn.Linear(256, self.num_actions)
 
-        self.load_state_dict(torch.load("trained_parameters/conv_parameters.pt", map_location=torch.device('cpu')))
+        #self.load_state_dict(torch.load("trained_parameters/conv_parameters.pt", map_location=torch.device('cpu')))
         logging.info("Loaded conv par")
     def forward(self, img):
         x = img

@@ -6,6 +6,9 @@ import time
 import numpy as np
 import logging
 import pyrealsense2 as rs
+import sys
+import time
+import RPi.GPIO as GPIO
 #import picamera
 #import apriltag
 # from gps3.agps3threaded import AGPS3mechanism

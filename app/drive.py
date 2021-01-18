@@ -33,10 +33,11 @@ try:
         ## OBSERVE
         state = goatsensor()
         state['step'] = step
+        logging.info(state['depth_frame'].mean())
                 
         ## CHOOSE ACTION
         action = agent.step(state)
-        logging.info(action)
+        #logging.info(action)
         
         if action.get("shutdown"):
             exitFlag=False
@@ -55,10 +56,5 @@ try:
 except (KeyboardInterrupt, SystemExit):
     logging.info("Shutting down")
     pass
-#except Exception as e:
-#    print("something wrong:")
-#    print(e)
-
-# shutdown commands:
 car.close()
 goatsensor.close()

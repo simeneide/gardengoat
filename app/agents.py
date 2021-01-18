@@ -16,7 +16,7 @@ class GoatAgent:
         }
 
         self.agent_ui = webserver.Webagent()
-        self.agent_ai = models.ConvNet()
+        self.agent_ai = models.DepthAvgNet()# models.ConvNet()
 
 
         
